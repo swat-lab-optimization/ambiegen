@@ -10,15 +10,17 @@ import typing
 import os
 
 
-from ambiegenvae.generators.abstract_generator import AbstractGenerator
+from ambiegen.generators.abstract_generator import AbstractGenerator
 
-from ambiegenvae.common.road_validity_check import is_valid_road
+from ambiegen.common.road_validity_check import is_valid_road
 
-from ambiegenvae.common.road_validity_check import min_radius
+from ambiegen.common.road_validity_check import min_radius
 
-from ambiegenvae.common.road_validity_check import is_inside_map
+from ambiegen.common.road_validity_check import is_inside_map
 from numpy import dot
 from numpy.linalg import norm
+from scipy.spatial.distance import directed_hausdorff
+import similaritymeasures
 log = logging.getLogger(__name__)
 MAX_RADIUS_THRESHOLD = 130
 
@@ -46,6 +48,7 @@ class KappaRoadGenerator(AbstractGenerator):
         self.kappas = []
         self.map_size = map_size
         self._name = "KappaRoadGenerator"
+        self.novelty_name = "cosine"
 
     @property
     def size(self) -> int:
@@ -119,14 +122,31 @@ class KappaRoadGenerator(AbstractGenerator):
         self.set_genotype(genotype)
         phenotype = self.get_phenotype()
         return phenotype
-    
+
+
+    def normalize(self, x: np.ndarray) -> np.ndarray:
+        """
+        """
+        min_val = self.get_lb()
+        max_val = self.get_ub()
+        return (x - min_val) / (max_val - min_val)
+
+   
     def cmp_func(self, x, y):
+        self.novelty_name = "cosine"
+        #x = self.normalize(x)
+        #y = self.normalize(y)
+        x = x[:self.size-2]
+        y = y[:self.size-2]
         cos_sim = dot(x, y)/(norm(x)*norm(y))
     
-        difference = 1 - abs(cos_sim)
+        difference = 1 - cos_sim
         return difference
+    
 
-        
+    def cmp_out_func(self, feature1, feature2):
+        distance = np.linalg.norm(np.array(feature1) - np.array(feature2))
+        return distance
 
     def get_next_kappa(self, last_kappa:float) -> float:
         """
@@ -266,6 +286,7 @@ class KappaRoadGenerator(AbstractGenerator):
             os.makedirs(save_path, exist_ok=True)
         fig.savefig(save_path + "\\" + str(num) + ".png", bbox_inches='tight')
         log.info("Saved image to " + save_path + "\\" + str(num) + ".png")
+        print("Saved image to " + save_path + "\\" + str(num) + ".png")
         plt.close(fig)
 
 
@@ -286,13 +307,15 @@ class KappaRoadGenerator(AbstractGenerator):
         valid_2 = min_radius(road_points) < MAX_RADIUS_THRESHOLD
         valid = valid_1 and valid_2
 
-        #while not(is_valid_road(road_points, self.map_size, self.map_offset)):
-        #    self.kappas = self.kappas[:-1]
-        #    if len(self.kappas) < self.min_number_of_points:
-        #        self.kappas = self.generate_random_kappas()
-        #    road_points = self.kappas_to_road_points(self.kappas)
+        while not(is_valid_road(road_points, self.map_size, self.map_offset)):
+            #self.kappas = self.kappas[:-1]
+            #if len(self.kappas) < self.min_number_of_points:
+            self.kappas = self.generate_random_kappas()
+            road_points = self.kappas_to_road_points(self.kappas)
+
         
-        return road_points, valid
+        
+        return road_points, True #valid
 
 if __name__ == "__main__":
     gen =  KappaRoadGenerator(200)

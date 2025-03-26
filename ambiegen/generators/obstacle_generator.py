@@ -1,26 +1,28 @@
-
-from aerialist.px4.obstacle import Obstacle
-from aerialist.px4.drone_test import DroneTest
-from ambiegenvae.common.testcase import TestCase
-from shapely import geometry
-from numpy import dot
-from numpy.linalg import norm
-import os
-import matplotlib.pyplot as plt 
-
 import abc
 import typing
 import numpy as np
 import typing 
 import random
 from shapely.geometry import Polygon
-from ambiegenvae.generators.abstract_generator import AbstractGenerator
+from ambiegen.generators.abstract_generator import AbstractGenerator
 import yaml
 #import cv2
 import os
 import logging #as log
+from rdp import rdp
+import time
 log = logging.getLogger(__name__)
-
+from aerialist.px4.obstacle import Obstacle
+from aerialist.px4.drone_test import DroneTest
+from ambiegen.common.testcase import TestCase
+from shapely import geometry
+from numpy import dot
+from numpy.linalg import norm
+import os
+import matplotlib.pyplot as plt 
+import matplotlib.patches as patches
+import similaritymeasures
+from joblib import Parallel, delayed
 class ObstacleGenerator(AbstractGenerator):
     """Abstract class for all generators."""
     def __init__(self, min_size:Obstacle, max_size:Obstacle, min_position:Obstacle, max_position:Obstacle, case_study_file: str, max_box_num:int=3):
@@ -34,16 +36,18 @@ class ObstacleGenerator(AbstractGenerator):
         self.max_size = max_size #[max_size.l, max_size.w, max_size.h]
         self.min_position = min_position #[min_position.x, min_position.y, 0, min_position.r]
         self.max_position = max_position #[max_position.x, max_position.y, 0, max_position.r]
-        #print(case_study_file)
-        #print(os.getcwd())
+
+        self.min_yaw = -1.57
+        self.max_yaw = 1.57
+        self.min_flight_height = 0
+        self.max_flight_height = 15
         self.case_study = DroneTest.from_yaml(case_study_file)
         self.max_box_num = max_box_num
         self._size = self.max_box_num*6 + 1
         self._size = self.max_box_num*6 + 1
         self.l_b, self.u_b = self.get_bounds()
-        self.l_b_norm = np.array(self._size * [0])
-        self.u_b_norm = np.array(self._size * [1])
-        self._genotype = None    
+        self._genotype = None   
+        self.novelty_name = None
 
     @property
     def size(self):
@@ -52,8 +56,6 @@ class ObstacleGenerator(AbstractGenerator):
     @size.setter
     def size(self, size):
         self._size = size
-
-    
     
     @property
     def phenotype_size(self) -> int:
@@ -63,15 +65,45 @@ class ObstacleGenerator(AbstractGenerator):
             int: Size of the phenotype.
         """
         return self.size#max_number_of_points
-    
 
     def cmp_func(self, x, y):
+
+        self.novelty_name = "cosine"
+
         cos_sim = dot(x, y) / (norm(x) * norm(y))
+        difference = 1 - cos_sim
+        return (difference)
+    
+    def cmp_out_func(self, feature1, feature2):
 
-        difference = 1 - abs(cos_sim)
-        return difference
+        feature_list = [feature1, feature2]
+        feature_frames = []
+        for feature in feature_list:
+            x, y, z = np.array(feature[0]), np.array(feature[1]), np.array(feature[2])
+            x_s = x#[::50]  
+            y_s = y#[::50]  
+            z_s = z#[::50] 
+            x_s = self.normalize_vector(x_s, self.min_position.x, self.max_position.x)
+            y_s = self.normalize_vector(y_s, self.min_position.y-15, self.max_position.y+15)
+            z_s = self.normalize_vector(z_s, self.min_flight_height, self.max_flight_height)
+
+            #feature_frame = np.column_stack((x_s, y_s, z_s))
+            feature_frame = np.column_stack((x_s, y_s, z_s))
+            start = time.time()
+            feature_frame = rdp(feature_frame, epsilon=0.5)
+            end = time.time()
+            print("RDP time", end-start)
+            #feature_frame = [x_s, y_s, z_s]
+            feature_frames.append(feature_frame)
         
+        dist = similaritymeasures.frechet_dist(
+            feature_frames[0],
+            feature_frames[1],
+        )
 
+        
+        return dist
+    
     def get_bounds(self):
         l_b = [1]
         u_b = [self.max_box_num]
@@ -87,6 +119,12 @@ class ObstacleGenerator(AbstractGenerator):
         u_b = self.flatten_test_case(u_b)
 
         return l_b, u_b
+    
+    def get_lb(self):
+        return self.size*[0]
+    def get_ub(self):  
+        return self.size*[1]
+    
     
     def flatten_test_case(self, test):
         result = []
@@ -140,6 +178,12 @@ class ObstacleGenerator(AbstractGenerator):
         self.genotype = self.phenotype2genotype(the_test)
 
         return the_test, True
+    
+    def normalize_vector(self, vector:np.ndarray, min_val:float, max_val:float):
+
+        result = (vector - min_val)/(max_val - min_val)
+
+        return result
     
     def normilize_flattened_test(self, test):
         result = (test - self.l_b)/(self.u_b - self.l_b)
@@ -240,21 +284,37 @@ class ObstacleGenerator(AbstractGenerator):
         if not(is_inside):
             return False
         return True
-    
-    def visualize_test(self, test,  save_path:str = "test.png", num=0, title=""):
-        #test.plot()
-        obstacles = test.test.simulation.obstacles
-        fig, ax = plt.subplots(figsize=(8, 8))
 
-        ax.set_xlim(self.min_position[0], self.max_position[1])
-        ax.set_ylim(self.min_position[1], self.max_position[1])
+
+    def visualize_test(self, test,  save_path:str = "test.png", num=0, title=""):
+    #test.plot()
+        obstacles = test.test.simulation.obstacles
+        fig, ax = plt.subplots(figsize=(8,5.7))
+
+        ax.set_xlim(self.min_position[0], self.max_position[0]+10) #80
+        ax.set_ylim(self.min_position[1] -12, self.max_position[1] + 15) # 57
+
+        area_x = (self.min_position[0] + self.max_position[1])/2
+        area_y = (self.min_position[1] + self.max_position[1])/2
+
+        area_width = self.max_position[0] - self.min_position[0]
+        area_height = self.max_position[1] - self.min_position[1]
+
+        rect = patches.Rectangle((area_x  -area_width/2, area_y - area_height/2), area_width, area_height, linewidth=1, edgecolor='black', facecolor='none', label='Obstacle area')
+        ax.add_patch(rect)
+
+        start_point = [0, 0]
+        end_point = [0, 50]
+
+        ax.scatter(start_point[0], start_point[1], c='green', label='Start point')
+        ax.scatter(end_point[0], end_point[1], c='blue', label='End point')
 
 
         if obstacles is not None:
             for obst in obstacles:
                 obst_patch = obst.plt_patch()
-                obst_patch.set_label("obstacle")
                 ax.add_patch(obst_patch)
+            obst_patch.set_label("obstacle")
 
 
         ax.tick_params(axis='both', which='major', labelsize=16)
@@ -272,8 +332,6 @@ class ObstacleGenerator(AbstractGenerator):
         print("Saved image to " + final_path)
         plt.close(fig)
 
-
-    
         
 
         

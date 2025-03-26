@@ -9,27 +9,25 @@ from ambiegen.executors.abstract_executor import AbstractExecutor
 from beamng_sim.code_pipeline.tests_generation import RoadTestFactory
 from ambiegen.common.road_validity_check import min_radius
 from ambiegen.common.vehicle_evaluate import evaluate_scenario
-
 log = logging.getLogger(__name__)
 MAX_RADIUS_THRESHOLD = 130
-MIN_RADIUS_THRESHOLD = 47
 
-class CurveExecutor(AbstractExecutor):
+class SimpleVehicleExecutor(AbstractExecutor):
     """
     Class for executing the test scenarios in the BeamNG simulator
     """
     def __init__(self, generator, test_validator: AbstractValidator= None, results_path: str = None):
         super().__init__(generator, test_validator, results_path)
-        self._name = "CurveExecutor"
-        self.min_fitness = 0.0125
+        self._name = "SimpleVehicleExecutor"
 
     def _execute(self, test) -> float:
 
-        min_curve = min_radius(test)
+        fitness, _ = evaluate_scenario(test)
 
-        if min_curve <= MIN_RADIUS_THRESHOLD:
-            fitness = 0
-        else:
-            fitness = -1/min_curve
+        log.info(f"Fitness: {fitness}")
+        #fitness = 0 
         
         return fitness
+
+
+

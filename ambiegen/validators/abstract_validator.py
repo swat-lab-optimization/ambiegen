@@ -1,14 +1,16 @@
 import numpy as np
 from abc import ABC, abstractmethod
-import typing
+from ambiegen.common.road_validity_check import is_valid_road
+from ambiegen.generators.abstract_generator import AbstractGenerator
 
 class AbstractValidator(ABC):
-    def __init__(self, config: dict):
-        self._config = config
-
+    def __init__(self, generator: AbstractGenerator):
+        self.generator = generator
 
     @abstractmethod
-    def is_valid(self) -> typing.Tuple([bool, str]):
+    def is_valid(self, test) -> (bool, str):
         pass
 
         
+
+    # You can add non-abstract methods here if needed

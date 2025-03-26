@@ -4,83 +4,93 @@ import numpy as np
 
 class AbstractGenerator(abc.ABC):
     """Abstract class for all generators."""
-    
-    def __init__(self, config: dict, u_b:typing.List[float], l_b:typing.List[float], n_dim:int):
-        """Initialize the generator with a configuration dictionary.
+
+    def __init__(self):
+        """Initialize the generator.
 
         Args:
             config (dict): Dictionary containing the configuration parameters.
         """
+        #self.size = solution_size
         self._name = "AbstractGenerator"
-        self._config = config
-        self._phenotype = None
-        self._genotype_size = n_dim
-        self._u_b = u_b
-        self._l_b = l_b
-        assert len(u_b) == len(l_b) == n_dim, "Upper and lower bounds should have the same length as the genotype size."
-        self._genotype = None
 
     @property
-    def genotype_size(self) -> int:
+    @abc.abstractmethod
+    def phenotype_size(self) -> int:
         """Size of the phenotype.
 
         Returns:
             int: Size of the phenotype.
         """
-        return self._genotype_size
+        pass
 
     @property
-    def name(self) -> str:
-        """Name of the generator.
+    @abc.abstractmethod
+    def size(self) -> int:
+        """Size of the phenotype.
 
         Returns:
-            str: Name of the generator.
+            int: Size of the phenotype.
+        """
+        pass
+
+    @property
+    def name(self) -> int:
+        """Size of the phenotype.
+
+        Returns:
+            int: Size of the phenotype.
         """
         return self._name
+    '''
+    @property
+    def genotype(self) -> typing.List[float]:
+        """Phenotype of the generator.
+
+        Returns:
+            list: Phenotype of the generator.
+        """
+        pass
+    '''
+    @abc.abstractmethod
+    def cmp_func(self, x:np.ndarray, y:np.ndarray) -> float:
+        pass
+
     
-    @name.setter
-    def name(self, value: str):
-        """Set the name of the generator.
-
-        Args:
-            value (str): Name of the generator.
-        """
-        self._name = value
-
     @abc.abstractmethod
-    def cmp_func(self, x: np.ndarray, y: np.ndarray) -> float:
-        """Compare two genotypes.
-
-        Args:
-            x (np.ndarray): First genotype.
-            y (np.ndarray): Second genotype.
+    def genotype2phenotype(self, genotype: typing.List[float]) -> typing.Tuple[np.ndarray, np.ndarray]:
+        """Get the genotype of the generator.
 
         Returns:
-            float: Comparison result.
+            list: Genotype of the generator.
+        """
+        pass
+    '''
+    
+    def set_genotype(self, phenotype):
+        """Set the phenotype of the generator.
+
+        Args:
+            phenotype (list): Phenotype of the generator.
+        """
+        pass
+    '''
+        
+    @abc.abstractmethod
+    def get_phenotype(self):
+        """Get the genotype of the generator.
+
+        Returns:
+            list: Genotype of the generator.
         """
         pass
 
     @abc.abstractmethod
-    def genotype2phenotype(self, genotype: typing.List[float]):
-        """Convert a genotype to a phenotype. This a method to convert the actual
-        test representation i.e. test .yaml file to a format that can be used by the
-        genetic algorithm.
-
-        Args:
-            genotype (typing.List[float]): The genotype to convert.
+    def generate_random_test(self) -> (typing.List[float], bool):
+        """Generate samples from the generator
 
         Returns:
-            The resulting phenotype.
-        """
-        pass
-
-    @abc.abstractmethod
-    def generate_random_test(self) -> typing.Tuple[typing.List[float], typing.List[int]]:
-        """Generate a random valid test. This method should generate a random vaid test and return it.
-        It should also set 
-
-        Returns:
-            typing.Tuple[typing.List[float], typing.List[int]]: The generated test and a success flag.
+            np.array: Generated samples.
         """
         pass
 
@@ -89,7 +99,6 @@ class AbstractGenerator(abc.ABC):
         """Visualize a test.
 
         Args:
-            test (typing.List[float]): Test to visualize.
-            save_path (str, optional): Path to save the visualization. Defaults to None.
+            test (np.array): Test to visualize.
         """
         pass

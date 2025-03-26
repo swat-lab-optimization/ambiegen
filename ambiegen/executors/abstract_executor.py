@@ -1,4 +1,5 @@
 import os
+import numpy as np
 import abc
 import logging #as log
 
@@ -6,9 +7,9 @@ from abc import ABC, abstractmethod
 from ambiegen.validators.abstract_validator import AbstractValidator
 from ambiegen.generators.abstract_generator import AbstractGenerator
 from typing import Tuple, Dict
+import traceback
 import time
 log = logging.getLogger(__name__)
-
 class  AbstractExecutor(ABC):
     """
     Class for evaluating the fitness of the test scenarios
@@ -17,17 +18,23 @@ class  AbstractExecutor(ABC):
         self,
         generator: AbstractGenerator,
         test_validator: AbstractValidator = None,
-        results_path: str = None
+        results_path: str = None,
+        algorithm = None,
     ):
-        self._results_path = results_path
-        self.test_validator = test_validator
+        self.results_path = results_path
+        self.validator = test_validator
         self.test_dict = {}
         self.generator = generator
         self._name = "AbstractExecutor"
+        self.algorithm = algorithm
 
-        self.exec_counter = -1  # counts how many executions have been done
+        if results_path:
+            #logger.debug("Creating folder for storing simulation results.")
+            os.makedirs(results_path, exist_ok=True)
 
-    def execute_test(self, test) -> Tuple[float, str]:
+        self.exec_counter = -1  # counts how many executions have been
+
+    def execute_test(self, test, algorithm=None) -> Tuple[float, str]:
         """
         The function `execute_test` executes a test and returns the fitness score and information about the
         test execution.
@@ -36,24 +43,25 @@ class  AbstractExecutor(ABC):
         It is passed as an argument to the method
         :return: The function `execute_test` returns a tuple containing two values: `fitness` and `info`.
         """
-
+        #logger.debug(f"Execution of a test #{self.exec_counter} (generation method: {test_dict['method']})")
         self.exec_counter += 1  # counts how many executions have been
+        #self.algorithm = algorithm
         
         fitness = 0
 
         #if self.test_validator:
         self.test_dict[self.exec_counter] = {"test": list(test), "fitness": None, "info": None}
+        genotype = test
         test = self.generator.genotype2phenotype(test)
 
         #log.info(f"Test: {test}")
-        valid, info = self.test_validator.is_valid(test)
-        log.info(f"Test validity: {valid}")
-        log.info(f"Test info: {info}")
-
-        self.test_dict[self.exec_counter]["fitness"] = fitness
-        self.test_dict[self.exec_counter]["info"] = info
+        valid, info = self.validator.is_valid(test)
+        #log.info(f"Test validity: {valid}")
+        #log.info(f"Test info: {info}")
         if not valid:
-
+            #logger.debug("The generated road is invalid")
+            self.test_dict[self.exec_counter]["fitness"] = fitness
+            self.test_dict[self.exec_counter]["info"] = info
             return float(fitness)
 
         try:
@@ -61,18 +69,16 @@ class  AbstractExecutor(ABC):
             fitness = self._execute(test)
             end = time.time()
             self.test_dict[self.exec_counter]["execution_time"] = end - start
-            log.info(f"Execution time: {end - start} seconds")
+            #log.info(f"Execution time: {end - start} seconds")
             self.test_dict[self.exec_counter]["fitness"] = fitness
+            self.test_dict[self.exec_counter]["info"] = info
             self.test_dict[self.exec_counter]["timestamp"] = time.time()
 
         except Exception as e:
-            end = time.time()
             log.info(f"Error {e} found")
-            log.info(f"Execution time: {end - start} seconds")
-
-            self.test_dict[self.exec_counter]["execution_time"] = end - start
-            self.test_dict[self.exec_counter]["timestamp"] = time.time()
-            self.test_dict[self.exec_counter]["outcome"] = "Exception"
+            log.info(f"Error {traceback.format_exc()} found")
+            #logger.error("Error during execution of test.", exc_info=True)
+            self.test_dict[self.exec_counter]["info"] = "Error during execution of test"
 
 
         return float(fitness)
@@ -89,15 +95,6 @@ class  AbstractExecutor(ABC):
             int: Size of the phenotype.
         """
         return self._name
-    
-    @name.setter
-    def name(self, value: str):
-        """Set the name of the generator.
-
-        Args:
-            value (str): Name of the generator.
-        """
-        self._name = value
 
 
 
