@@ -13,6 +13,7 @@ plugins:
             docstring_style: google  # or numpy, sphinx
             show_source: true
             show_root_heading: true
+            show_submodules: true
 
 nav:
   - Home: index.md
