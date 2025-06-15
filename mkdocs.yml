@@ -9,7 +9,10 @@ plugins:
   - mkdocstrings:
       handlers:
         python:
-          paths: ["."]
+          options:
+            docstring_style: google  # or numpy, sphinx
+            show_source: true
+            show_root_heading: true
 
 nav:
   - Home: index.md

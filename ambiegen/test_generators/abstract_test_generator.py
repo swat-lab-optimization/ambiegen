@@ -21,6 +21,8 @@ log = logging.getLogger(__name__)
 
 
 class AbstractTestGenerator(abc.ABC):
+    '''
+    Abstract class for test generators. It provides a structure for initializing'''
     def __init__(self, name="abstract_test_generator"):
         self._name = name
 

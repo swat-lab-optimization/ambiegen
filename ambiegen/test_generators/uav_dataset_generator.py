@@ -15,6 +15,7 @@ log = logging.getLogger(__name__)
 
 
 class UAVDatasetGenerator(UAVTestGenerator):
+    '''Class for generating UAV dataset using obstacle scenes.'''
     def __init__(self, save_path="results", name="uav_dataset_generator"):
         super().__init__(name)
         self.config = load_config("uav_dataset_generator")
