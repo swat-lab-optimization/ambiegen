@@ -9,8 +9,6 @@ python:
   install:
     - requirements: requirements.txt
 
-sphinx:
-  configuration: false  # Disable default Sphinx build
 
 mkdocs:
   configuration: mkdocs.yml
