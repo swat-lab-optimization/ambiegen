@@ -1,0 +1,19 @@
+site_name: AmbieGen
+site_description: Automated Testing Framework for Autonomous Robotic Systems
+
+theme:
+  name: readthedocs
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: ["."]
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Usage: usage.md
+  - API Reference: api.md
+  - Contributing: contributing.md

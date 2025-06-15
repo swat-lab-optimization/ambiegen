@@ -1,0 +1,16 @@
+version: 2
+
+build:
+  os: Windows-11
+  tools:
+    python: "3.9"
+
+python:
+  install:
+    - requirements: requirements.txt
+
+sphinx:
+  configuration: false  # Disable default Sphinx build
+
+mkdocs:
+  configuration: mkdocs.yml
