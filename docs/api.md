@@ -1,6 +1,6 @@
 # API Reference
 
-::: ambiegen.test_generators.abstract_test_generator
+::: ambiegen
     handler: python
     options:
       show_source: true
