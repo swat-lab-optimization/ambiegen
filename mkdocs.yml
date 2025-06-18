@@ -3,8 +3,6 @@ site_description: Automated Testing Framework for Autonomous Robotic Systems
 
 theme:
   name: readthedocs
-  palette:
-    primary: indigo
   logo: assets/logo.png
 
 plugins:
@@ -24,7 +22,6 @@ plugins:
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
-  - Usage: usage.md
   - API Reference: api.md
   - Contributing: contributing.md
 
