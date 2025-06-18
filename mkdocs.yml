@@ -2,18 +2,24 @@ site_name: AmbieGen
 site_description: Automated Testing Framework for Autonomous Robotic Systems
 
 theme:
-  name: readthedocs
+  name: material
+  palette:
+    primary: indigo
+  logo: assets/logo.png
 
 plugins:
   - search
   - mkdocstrings:
       handlers:
         python:
+          paths: ["."]
           options:
-            docstring_style: google  # or numpy, sphinx
+            docstring_style: google  # or numpy if you use NumPy style
             show_source: true
             show_root_heading: true
-            show_submodules: true
+            show_signature: true
+            separate_signature: true
+            merge_init_into_class: true
 
 nav:
   - Home: index.md
@@ -21,3 +27,4 @@ nav:
   - Usage: usage.md
   - API Reference: api.md
   - Contributing: contributing.md
+

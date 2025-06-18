@@ -14,37 +14,18 @@ log = logging.getLogger(__name__)
 class AbstractEvolutionaryTester(AbstractTester):
     """
     Abstract base class for evolutionary test generators.
-    This class provides a structure for initializing and configuring evolutionary search algorithms
-    used in test generation. It defines the workflow for setting up the search algorithm, configuring
-    crossover and mutation operators, initializing parameters from a configuration file, and running
-    the optimization process. Subclasses must implement methods for initializing the test generator,
-    test executor, and problem definition.
+
+    This class provides a structure for initializing and configuring
+    evolutionary search algorithms used in test generation.
+
     Attributes:
         name (str): Name of the test generator.
-        config_file (str or None): configuration file.
+        config_file (str | None): Configuration file path.
         seed (int): Random seed for reproducibility.
-        pop_size (int): Population size for the evolutionary algorithm.
-        alg (str): Name of the evolutionary algorithm to use.
-        crossover (str): Crossover operator name.
-        mutation (str): Mutation operator name.
-        method: Configured evolutionary algorithm instance.
-        res: Result of the optimization process.
+
     Methods:
-        set_up_search_algorithm():
-            Initializes parameters and configures the evolutionary search algorithm.
-        configure_algorithm():
-            Sets up the evolutionary algorithm with the appropriate crossover and mutation operators,
-            sampling strategy, and duplicate elimination.
-        initialize_parameters(alg, cross, mut):
-            Initializes algorithm parameters from the configuration file and sets the random seed.
-        run_optimization():
-            Runs the optimization process using the configured evolutionary algorithm.
-        initialize_test_generator():
-            Abstract method to initialize the test generator. Must be implemented by subclasses.
-        initialize_test_executor():
-            Abstract method to initialize the test executor. Must be implemented by subclasses.
-        initialize_problem():
-            Abstract method to initialize the optimization problem. Must be implemented by subclasses.
+        set_up_search_algorithm(): Initializes parameters...
+        configure_algorithm(): Sets up the evolutionary algorithm...
     """
 
     def __init__(self, name="evlutionary_test_generator", config_file=None):

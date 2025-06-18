@@ -18,3 +18,4 @@ mkdocs
 mkdocs-material
 mkdocstrings[python]
 bagpy
+black
