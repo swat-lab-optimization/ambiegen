@@ -1,10 +1,9 @@
 from ambiegen.executors.abstract_executor import AbstractExecutor
-from ambiegen.validators.abstract_validator import AbstractValidator
 import logging
 from ambiegen.common.rrt import RRT
-#from ambiegen.common.rrt_star import RRTStar
 log = logging.getLogger(__name__)
 import time
+
 class RRTExecutor(AbstractExecutor):
     """
     Class for evaluating a test case with an RRT planner
@@ -14,8 +13,8 @@ class RRTExecutor(AbstractExecutor):
         test_validator (AbstractValidator): The validator used to validate test scenarios.
         n_sim_evals (int): The number of simulation evaluations allowed.
     """
-    def __init__(self, generator, test_validator: AbstractValidator= None):
-        super().__init__(generator, test_validator)
+    def __init__(self, generator):
+        super().__init__(generator)
         self.n_sim_evals = 0
         self._name = "RRTExecutor"
         self.min_fitness = 25
@@ -41,7 +40,7 @@ class RRTExecutor(AbstractExecutor):
         fitness = 0
         tc_obstacle_list = test.test.simulation.obstacles 
         obstacle_list = []
-        bonus = 0
+
         for obs in tc_obstacle_list:
             obstacle_list.append((obs.position.x, obs.position.y, obs.size.l, obs.size.w, obs.position.r))
 

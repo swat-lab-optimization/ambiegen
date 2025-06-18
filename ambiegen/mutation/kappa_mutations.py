@@ -49,31 +49,3 @@ class KappaMutation(AbstractMutation):
     def _flip_sign_kappas(self, kappas: np.ndarray) -> np.ndarray:
         return np.array(list(map(lambda x: x * -1.0, kappas)))
 
-
-class LatentKappaMutation(KappaMutation):
-    def __init__(self, mut_rate: float = 0.4):
-        super().__init__(mut_rate)
-
-    def _do_mutation(self, x) -> np.ndarray:
-        problem = self.problem
-        possible_mutations = [
-            self._increase_kappas,
-            self._random_modification,
-            self._reverse_kappas,
-            self._split_and_swap_kappas,
-            self._flip_sign_kappas
-        ]
-        self.gen = problem.executor.generator
-        self.validator = problem.executor.test_validator
-
-        mutator = np.random.choice(possible_mutations)
-
-        test_p = self.gen.decode_test(x)
-
-        mutated_x = mutator(test_p)
-        is_valid, _ = self.validator.is_valid(mutated_x)
-        mutated_x = self.gen.encode_test(mutated_x)
-        if is_valid:
-            return mutated_x
-        else:
-            return x

@@ -1,50 +1,21 @@
 import abc
 import logging
-import numpy as np
-import torch
 from pymoo.optimize import minimize
 from pymoo.termination import get_termination
-from torchvision import datasets, transforms
-from ambiegen.common import VAE
 from ambiegen import ALGORITHMS, SAMPLERS, CROSSOVERS, MUTATIONS
 from ambiegen.common.duplicate_removal import AbstractDuplicateElimination
 from ambiegen.common.random_seed import get_random_seed
-from ambiegen.common import (
-    ToTensor1D,
-    Normalize1D_1,
-    Denormalize1D_1,
-)
-
-from ambiegen.common import load_model
+from ambiegen.testers.abstract_tester import AbstractTester
 
 log = logging.getLogger(__name__)
 
 
-class AbstractTestGenerator(abc.ABC):
+class AbstractFuzzingTester(AbstractTester):
     '''
     Abstract class for test generators. It provides a structure for initializing'''
     def __init__(self, name="abstract_test_generator"):
-        self._name = name
+        self.super().__init__(name)
 
-    def initialize_vae(self):
-        
-        self.nLat = self.config["nLat"]
-
-        self.archive = np.load(self.config["dataset_path"])
-        min = np.min(self.archive, axis=0)
-        max = np.max(self.archive, axis=0)
-
-        self.transform = Denormalize1D_1(min, max)
-        self.transform_norm = transforms.Compose(
-            [ToTensor1D(), Normalize1D_1(min, max)]
-        )
-
-        self.model = VAE[self.config["vae_architecture"]](self.nDim, self.nLat)
-
-        path = self.config["model_path"]  # optimized model
-        self.model = load_model(1000, self.model, path=path)
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model.to(self.device)
 
     def configure_algorithm(self):
         if self.crossover == "sbx":
@@ -107,8 +78,6 @@ class AbstractTestGenerator(abc.ABC):
     def start(self, alg: str = "ga", cross: str = "sbx", mut: str = "pm"):
 
         self.initialize_parameters(alg, cross, mut)
-        if ("vae_architecture") in self.config or ("model_path") in self.config:
-            self.initialize_vae()
         self.initialize_problem()
         self.configure_algorithm()
         self.run_optimization()

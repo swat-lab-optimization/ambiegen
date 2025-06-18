@@ -1,0 +1,30 @@
+tester: search_based  # or 'fuzzing', 'bayesian_optimization', etc.
+
+common:
+  seed: None
+  termination: "n_evals"
+  budget: 10000
+
+
+search_based:
+  pop_size: 100
+  algorithm: "random"
+  crossover: "sbx"
+  mutation: "obstacle"
+  crossover_prob: 0.9
+  mutation_prob: 0.4
+
+fuzzing:
+  mutators: ["bitflip", "shrink"]
+  max_depth: 5
+
+bayesian_optimization:
+  acquisition: "ei"
+  surrogate_model: "gp"
+
+
+experiment:
+  name: "example_experiment"
+  description: "This is an example experiment configuration."
+  output_dir: "./results"
+  log_level: "info"

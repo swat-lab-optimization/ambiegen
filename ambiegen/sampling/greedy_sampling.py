@@ -26,15 +26,15 @@ class GreedySampling(AbstractSampling):
     
     def _select_best_of_k(self, k:int):
         best_fitness = 0
-        best_phenotype = []
+        best_test = None
 
         for i in range(k):
-            test, valid = self.generator.generate_random_test()
-            phenotype = self.generator.genotype
+            test = self.generator.generate_random_test()
+            phenotype = self.generator.genotype2phenotype(test)
 
-            fitness = self.executor.execute_test(test)
+            fitness = self.executor.execute_test(phenotype)
             if fitness < best_fitness:
                 best_fitness = fitness
-                best_phenotype = phenotype
+                best_test = test
 
-        return best_phenotype
+        return best_test

@@ -21,7 +21,7 @@ class LHSSampling(Sampling, ABC):
             X = LHS()._do(problem, n_samples, **kwargs)
             for ind in X:
                 ind = list(ind)
-                valid, msg = self.validator.is_valid(self.generator.genotype2phenotype(ind))
+                valid, msg = self.generator.is_valid(self.generator.genotype2phenotype(ind))
                 if m >= n_samples:
                     break
                 if valid:

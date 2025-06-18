@@ -2,95 +2,130 @@ import abc
 import typing
 import numpy as np
 
-class AbstractGenerator(abc.ABC):
-    """Abstract class for all generators."""
 
-    def __init__(self):
-        """Initialize the generator.
+class AbstractGenerator(abc.ABC):
+    """
+    Abstract base class for all test generators.
+
+    This class defines the interface that all test generators must implement,
+    providing a consistent API for generating, comparing, and visualizing tests.
+    """
+
+    def __init__(self, name: str = "AbstractGenerator"):
+        """
+        Initialize the generator.
 
         Args:
-            config (dict): Dictionary containing the configuration parameters.
+            name: Name identifier for the generator
+            config: Optional configuration dictionary containing parameters
         """
-        #self.size = solution_size
-        self._name = "AbstractGenerator"
+        self._name = name
 
     @property
-    @abc.abstractmethod
-    def phenotype_size(self) -> int:
-        """Size of the phenotype.
+    def name(self) -> str:
+        """
+        Get the name of the generator.
 
         Returns:
-            int: Size of the phenotype.
+            Name of the generator
         """
-        pass
+        return self._name
 
+    # Abstract properties that must be implemented by subclasses
     @property
     @abc.abstractmethod
     def size(self) -> int:
-        """Size of the phenotype.
+        """
+        Size of the genotype representation.
+
+        The genotype is the internal representation used by the optimization algorithm.
+        This is typically a list/array of floating-point values.
 
         Returns:
-            int: Size of the phenotype.
+            Number of elements in the genotype
         """
         pass
 
     @property
-    def name(self) -> int:
-        """Size of the phenotype.
+    @abc.abstractmethod
+    def lower_bound(self) -> typing.List[float]:
+        """
+        Lower bound of the genotype.
+
+        This is the minimum value for each element in the genotype.
 
         Returns:
-            int: Size of the phenotype.
+            List of lower bounds for each element in the genotype
         """
-        return self._name
-    '''
+        pass
+
+    
     @property
-    def genotype(self) -> typing.List[float]:
-        """Phenotype of the generator.
+    @abc.abstractmethod
+    def upper_bound(self) -> typing.List[float]:
+        """
+        Upper bound of the genotype.
+
+        This is the maximum value for each element in the genotype.
 
         Returns:
-            list: Phenotype of the generator.
+            List of upper bounds for each element in the genotype
         """
         pass
-    '''
-    @abc.abstractmethod
-    def cmp_func(self, x:np.ndarray, y:np.ndarray) -> float:
-        pass
 
-    
     @abc.abstractmethod
-    def genotype2phenotype(self, genotype: typing.List[float]) -> typing.Tuple[np.ndarray, np.ndarray]:
-        """Get the genotype of the generator.
-
-        Returns:
-            list: Genotype of the generator.
-        """
-        pass
-    '''
-    
-    def set_genotype(self, phenotype):
-        """Set the phenotype of the generator.
+    def cmp_func(self, test1: typing.List[float], test2: typing.List[float]) -> int:
+        """Compare two tests.
 
         Args:
-            phenotype (list): Phenotype of the generator.
-        """
-        pass
-    '''
-        
-    @abc.abstractmethod
-    def get_phenotype(self):
-        """Get the genotype of the generator.
+            test1 (np.array): First test to compare.
+            test2 (np.array): Second test to compare.
 
         Returns:
-            list: Genotype of the generator.
+            int: Comparison result, -1 if test1 < test2, 0 if equal, 1 if test1 > test2.
+        """
+        pass
+
+    def phenotype2genotype(self, phenotype: typing.List[float]) -> typing.List[float]:
+        """Convert a phenotype to a genotype.
+
+        Args:
+            phenotype (np.array): Phenotype to convert.
+
+        Returns:
+            np.array: Genotype representation of the phenotype.
         """
         pass
 
     @abc.abstractmethod
-    def generate_random_test(self) -> (typing.List[float], bool):
+    def genotype2phenotype(self, genotype: typing.List[float]) -> typing.List[float]:
+        """Convert a genotype to a phenotype.
+
+        Args:
+            genotype (np.array): Genotype to convert.
+
+        Returns:
+            np.array: Phenotype representation of the genotype.
+        """
+        pass
+
+    @abc.abstractmethod
+    def generate_random_test(self) -> (typing.List[float]):
         """Generate samples from the generator
 
         Returns:
             np.array: Generated samples.
+        """
+        pass
+    @abc.abstractmethod
+    def is_valid(self, test: typing.List[float]) -> bool:
+        """Check if a test is valid.
+
+        Args:
+            test (np.array): Test to check.
+
+        Returns:
+            bool: True if the test is valid, False otherwise.
         """
         pass
 
@@ -102,3 +137,7 @@ class AbstractGenerator(abc.ABC):
             test (np.array): Test to visualize.
         """
         pass
+
+    def __str__(self) -> str:
+        """String representation of the generator."""
+        return f"{self.__class__.__name__}(name='{self.name}', genotype_size={self.genotype_size})"

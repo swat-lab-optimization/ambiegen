@@ -5,13 +5,8 @@ import typing
 import random
 from shapely.geometry import Polygon
 from ambiegen.generators.abstract_generator import AbstractGenerator
-import yaml
-#import cv2
 import os
 import logging #as log
-from rdp import rdp
-import time
-log = logging.getLogger(__name__)
 from aerialist.px4.obstacle import Obstacle
 from aerialist.px4.drone_test import DroneTest
 from ambiegen.common.testcase import TestCase
@@ -21,50 +16,39 @@ from numpy.linalg import norm
 import os
 import matplotlib.pyplot as plt 
 import matplotlib.patches as patches
-import similaritymeasures
-from joblib import Parallel, delayed
+
+log = logging.getLogger(__name__)
+
 class ObstacleGenerator(AbstractGenerator):
     """Abstract class for all generators."""
-    def __init__(self, min_size:Obstacle, max_size:Obstacle, min_position:Obstacle, max_position:Obstacle, case_study_file: str, max_box_num:int=3):
+    def __init__(self,  case_study_file: str, max_box_num:int=3):
         """Initialize the generator.
 
         Args:
             config (dict): Dictionary containing the configuration parameters.
         """
         super().__init__()
-        self.min_size = min_size #[min_size.l, min_size.w, min_size.h]
-        self.max_size = max_size #[max_size.l, max_size.w, max_size.h]
-        self.min_position = min_position #[min_position.x, min_position.y, 0, min_position.r]
-        self.max_position = max_position #[max_position.x, max_position.y, 0, max_position.r]
-
-        self.min_yaw = -1.57
-        self.max_yaw = 1.57
-        self.min_flight_height = 0
-        self.max_flight_height = 15
+        self.min_size = Obstacle.Size(2, 2, 15)
+        self.max_size = Obstacle.Size(20, 20, 25)
+        self.min_position = Obstacle.Position(-40, 10, 0, 0)
+        self.max_position = Obstacle.Position(30, 40, 0, 90)
         self.case_study = DroneTest.from_yaml(case_study_file)
         self.max_box_num = max_box_num
-        self._size = self.max_box_num*6 + 1
-        self._size = self.max_box_num*6 + 1
-        self.l_b, self.u_b = self.get_bounds()
-        self._genotype = None   
-        self.novelty_name = None
+        self._l_b, self._u_b = self.get_bounds()
+        self._size = self.max_box_num*6 + 1 
 
     @property
     def size(self):
         return self._size
     
-    @size.setter
-    def size(self, size):
-        self._size = size
+
+    @property
+    def lower_bound(self):
+        return self._size*[0]
     
     @property
-    def phenotype_size(self) -> int:
-        """Size of the phenotype.
-
-        Returns:
-            int: Size of the phenotype.
-        """
-        return self.size#max_number_of_points
+    def upper_bound(self):  
+        return self._size*[1]
 
     def cmp_func(self, x, y):
 
@@ -74,37 +58,7 @@ class ObstacleGenerator(AbstractGenerator):
         difference = 1 - cos_sim
         return (difference)
     
-    def cmp_out_func(self, feature1, feature2):
-
-        feature_list = [feature1, feature2]
-        feature_frames = []
-        for feature in feature_list:
-            x, y, z = np.array(feature[0]), np.array(feature[1]), np.array(feature[2])
-            x_s = x#[::50]  
-            y_s = y#[::50]  
-            z_s = z#[::50] 
-            x_s = self.normalize_vector(x_s, self.min_position.x, self.max_position.x)
-            y_s = self.normalize_vector(y_s, self.min_position.y-15, self.max_position.y+15)
-            z_s = self.normalize_vector(z_s, self.min_flight_height, self.max_flight_height)
-
-            #feature_frame = np.column_stack((x_s, y_s, z_s))
-            feature_frame = np.column_stack((x_s, y_s, z_s))
-            start = time.time()
-            feature_frame = rdp(feature_frame, epsilon=0.5)
-            end = time.time()
-            print("RDP time", end-start)
-            #feature_frame = [x_s, y_s, z_s]
-            feature_frames.append(feature_frame)
-        
-        dist = similaritymeasures.frechet_dist(
-            feature_frames[0],
-            feature_frames[1],
-        )
-
-        
-        return dist
-    
-    def get_bounds(self):
+    def get_bounds(self) -> tuple[np.ndarray, np.ndarray]:
         l_b = [1]
         u_b = [self.max_box_num]
         l_b_ = [self.min_size.l, self.min_size.w, self.min_size.h, self.min_position.x, self.min_position.y,  self.min_position.r]
@@ -119,14 +73,9 @@ class ObstacleGenerator(AbstractGenerator):
         u_b = self.flatten_test_case(u_b)
 
         return l_b, u_b
+
     
-    def get_lb(self):
-        return self.size*[0]
-    def get_ub(self):  
-        return self.size*[1]
-    
-    
-    def flatten_test_case(self, test):
+    def flatten_test_case(self, test) -> np.ndarray:
         result = []
         for item in test:
             if isinstance(item, list):
@@ -135,17 +84,7 @@ class ObstacleGenerator(AbstractGenerator):
                 result.append(item)
         return np.array(result)
     
-    def get_random_box_vals(self):
-        l=random.choice(np.arange(self.min_size.l, self.max_size.l))
-        w=random.choice(np.arange(self.min_size.w, self.max_size.w))
-        h=random.choice(np.arange(self.min_size.h, self.max_size.h))
-        x=random.choice(np.arange(self.min_position.x, self.max_position.x))
-        y=random.choice(np.arange(self.min_position.y, self.max_position.y))
-        #z=0  # obstacles should always be place on the ground
-        r=random.choice(np.arange(self.min_position.r, self.max_position.r))
-        return [l, w, h, x, y, r]
-
-    def generate_random_test(self, genotype=True):
+    def generate_random_test(self) -> typing.List[float]:
 
         obstacles_list = []
         num_boxes = np.random.choice(np.arange(1, self.max_box_num+1))
@@ -164,87 +103,59 @@ class ObstacleGenerator(AbstractGenerator):
             )
             obstacle = Obstacle(size, position)
 
-            to_include = self.obstacle_fits(obstacle, obstacles_list)
+            to_include = self.obstacles_fit([obstacle] + obstacles_list)
             if to_include:
                 obstacles_list.append(obstacle)
 
 
         obstacles_list = obstacles_list[:num_boxes]
-
-        #print("Genotype", self.genotype)
         the_test = TestCase(self.case_study, obstacles_list)
-
-       # self.set_genotype(self.phenotype2genotype(the_test))
+        self.phenotype = the_test
         self.genotype = self.phenotype2genotype(the_test)
 
-        return the_test, True
+        return self.genotype
+        
+    def normalize_flattened_test(self, test: typing.List[float]) -> typing.List[float]:
+        '''
+        Use min and max values to normalize the test case.
+        Args:
+            test (list): Flattened test case to normalize.'''
+        result = (test - self._l_b)/(self._u_b - self._l_b)
+        return result
     
-    def normalize_vector(self, vector:np.ndarray, min_val:float, max_val:float):
+    def denormalize_flattened_test(self, norm_test: typing.List[float]) -> typing.List[float]:
+        '''
+        Use min and max values to denormalize the test case.
+        Args:
+            norm_test (list): Flattened normalized test case to denormalize.
+        '''
+        result = norm_test*(self._u_b - self._l_b) + self._l_b
+        result =  np.array(result, dtype=object)
+        result[0] = int(round(result[0]))  # Ensure the first element is an integer (number of boxes)
 
-        result = (vector - min_val)/(max_val - min_val)
-
         return result
     
-    def normilize_flattened_test(self, test):
-        result = (test - self.l_b)/(self.u_b - self.l_b)
-        return result
-    
-    def denormilize_flattened_test(self, norm_test):
-        result = norm_test*(self.u_b - self.l_b) + self.l_b
-        return result
-    
-    def phenotype2genotype(self, phenotype):
+    def phenotype2genotype(self, phenotype: TestCase) -> typing.List[float]:
         obstacles_list = phenotype.test.simulation.obstacles
         num_boxes = len(obstacles_list)
         tc = [num_boxes]
         for b in obstacles_list:
             tc.extend([b.size.l, b.size.w, b.size.h, b.position.x, b.position.y, b.position.r])
 
-        #for r in range(num_boxes, self.max_box_num): # extent with empty values
-        #    tc.extend([self.min_size.l, self.min_size.w, self.min_size.h, self.min_position.x, self.min_position.y, self.min_position.r])
         for r in range(num_boxes, self.max_box_num):
             tc.extend(self.get_random_box_vals())   
 
-        tc = self.normilize_flattened_test(tc)
+        tc = self.normalize_flattened_test(tc)
 
         return tc
-    
-    @property
-    def genotype(self):
-        return self._genotype
-    
-
-    @genotype.setter
-    def genotype(self, genotype):
-       self._genotype = genotype
-
-    def get_genotype(self):
-        return self._genotype
-    
-    def get_phenotype(self):
-        self.phenotype = self.genotype2phenotype(self.genotype)
-        return self.phenotype
-    
-
-    def resize_test(self, test):
-        num_boxes = int(round(test[0]))
-        #print(f"num_boxes {num_boxes}")
-        test = test[1:]
-        # resize test to the shape (max_box_num, 7)
-        test = test.reshape(-1, 6)
-
-        return [num_boxes, test]
         
-    def genotype2phenotype(self, genotype):
+    def genotype2phenotype(self, genotype: typing.List[float]) -> TestCase:
 
-        denormilized_tc = self.denormilize_flattened_test(genotype)
-        #print("Denormilized tc", denormilized_tc)
+        denormilized_tc = self.denormalize_flattened_test(genotype)
         resized_tc = self.resize_test(denormilized_tc)
         num_boxes = min(resized_tc[0], self.max_box_num)
         tc = resized_tc[1]
         obstacles_list = []
-        #print("Boxes num", num_boxes)
-        #print("tc", tc)
         for b in range(num_boxes):
             size = Obstacle.Size(
             l=tc[b][0],
@@ -264,30 +175,79 @@ class ObstacleGenerator(AbstractGenerator):
         the_test = TestCase(self.case_study, obstacles_list)
 
         return the_test
+    
+    def resize_test(self, test):
+        num_boxes = int(round(test[0]))
+        test = test[1:]
+        test = test.reshape(-1, 6)
+        return [num_boxes, test]
+    
+
+    def is_valid(self, test) -> tuple[bool, str]:
+        """
+        Check if the given test is valid.
+
+        Args:
+            test: The test to be validated.
+
+        Returns:
+            A tuple containing a boolean indicating the validity of the test and a string with additional information.
+        """
+        #log.info(f"test {test}")
+        boxes  = test.test.simulation.obstacles
+        
+        valid, info  = self.obstacles_fit(boxes)
+
+        return valid, info
 
 
-    def obstacle_fits(self, obstacle:Obstacle, obstacles_list:list):
+    def obstacles_fit(self, box_list: typing.List[Obstacle]) -> tuple[bool, str]:
+        """
+        Check if the boxes in the given list fit within the defined bounds.
 
-        new_box_geometry = obstacle.geometry#[obstacle.size.l, obstacle.size.w, obstacle.size.h]
-        existing_boxes_geometry_list = [obstacle.geometry for obstacle in obstacles_list]#[obstacle.position.x, obstacle.position.y, obstacle.position.r]
+        Args:
+            box_list: A list of boxes to be checked.
+
+        Returns:
+            A tuple containing a boolean indicating if the boxes fit within the bounds and a string with additional information.
+        """
+        existing_boxes_geometry_list = [obstacle.geometry for obstacle in box_list]#[obstacle.position.x, obstacle.position.y, obstacle.position.r]
 
         min_pos = [self.min_position.x, self.min_position.y]
         max_pos = [self.max_position.x, self.max_position.y]
 
         outer_polygon = geometry.Polygon([min_pos, [min_pos[0], max_pos[1]], max_pos, [max_pos[0], min_pos[1]]])
-        
 
-        for box in existing_boxes_geometry_list:
-            if new_box_geometry.intersects(box):
-                return False
-        is_inside = new_box_geometry.within(outer_polygon)
-        if not(is_inside):
-            return False
-        return True
+        n = len(existing_boxes_geometry_list)
 
+        for i in range(n):
+            for j in range(i + 1, n):
+                poly1 = existing_boxes_geometry_list[i]
+                poly2 = existing_boxes_geometry_list[j]
+
+                # Check if polygons intersect
+                if poly1.intersects(poly2):
+                    
+                    return False, f"Obstacles {i} and {j} intersect."
+
+        for inner_polygon in existing_boxes_geometry_list:
+            if not(inner_polygon.within(outer_polygon)):
+                return False, "Obstacle out of the defined bounds"
+            
+
+        return True, "Valid test"
+    
+    def get_random_box_vals(self):
+        l = random.choice(np.arange(self.min_size.l, self.max_size.l))
+        w = random.choice(np.arange(self.min_size.w, self.max_size.w))
+        h = random.choice(np.arange(self.min_size.h, self.max_size.h))
+        x = random.choice(np.arange(self.min_position.x, self.max_position.x))
+        y = random.choice(np.arange(self.min_position.y, self.max_position.y))
+        #z=0  # obstacles should always be place on the ground
+        r = random.choice(np.arange(self.min_position.r, self.max_position.r))
+        return [l, w, h, x, y, r]
 
     def visualize_test(self, test,  save_path:str = "test.png", num=0, title=""):
-    #test.plot()
         obstacles = test.test.simulation.obstacles
         fig, ax = plt.subplots(figsize=(8,5.7))
 
@@ -309,20 +269,16 @@ class ObstacleGenerator(AbstractGenerator):
         ax.scatter(start_point[0], start_point[1], c='green', label='Start point')
         ax.scatter(end_point[0], end_point[1], c='blue', label='End point')
 
-
         if obstacles is not None:
             for obst in obstacles:
                 obst_patch = obst.plt_patch()
                 ax.add_patch(obst_patch)
             obst_patch.set_label("obstacle")
 
-
         ax.tick_params(axis='both', which='major', labelsize=16)
         ax.legend(fontsize=16)
         plt.ioff()
         ax.set_title(title, fontsize=16)
-
-        #ax.legend()
 
         if not(os.path.exists(save_path)):
             os.makedirs(save_path, exist_ok=True)

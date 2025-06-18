@@ -4,15 +4,28 @@ import random
 import copy
 
 class UniformMutation(AbstractMutation):
-    '''
-    Some mutation ideas borrowed from:
-    https://github.com/ERATOMMSD/frenetic-sbst21/blob/main/src/generators/random_frenet_generator.py
-    '''
-    def __init__(self, mut_rate: float = 0.4):
-        super().__init__(mut_rate)
+    """
+    UniformMutation applies uniform mutation to individuals in an evolutionary algorithm.
+    This mutation operator randomly selects genes in the input array and replaces them with new values
+    sampled uniformly within the allowed bounds for each gene. The probability of mutation for each gene
+    is controlled by `un_mut_rate`.
+    Args:
+        mut_rate (float, optional): The overall mutation rate for the operator. Defaults to 0.4.
+    Attributes:
+        un_mut_rate (float): The probability of mutating each gene during uniform modification.
+    Methods:
+        _do_mutation(x):
+            Applies the mutation operator to the input array `x` by randomly selecting a mutation method.
+        _uniform_modification(kappas):
+            Performs uniform mutation on the input array `kappas`, replacing each gene with a new value
+            sampled uniformly within its bounds with probability `un_mut_rate`.
+    """
+
+    def __init__(self, mut_prob: float = 0.4):
+        super().__init__(mut_prob)
 
     def _do_mutation(self, x) -> np.ndarray:
-        self.un_mut_rate = 0.2
+        self.un_mut_rate = 0.05 # Probability of mutating each gene
         possible_mutations = [
             self._uniform_modification,
 
@@ -24,8 +37,7 @@ class UniformMutation(AbstractMutation):
     
 
     def _uniform_modification(self, kappas: np.ndarray) -> np.ndarray:
-        # number of kappas to be modified
-        #kappas = kappas.tolist()
+
         l_b = self.problem.xl
         u_b = self.problem.xu
         modified_kappas = copy.deepcopy(kappas)

@@ -5,12 +5,12 @@ import abc
 
 
 class AbstractCrossover(Crossover, abc.ABC):
-    def __init__(self, cross_rate: float = 0.9):
+    def __init__(self, cross_prob: float = 0.9):
         
 
         # define the crossover: number of parents and number of offsprings
         super().__init__(2, 2)
-        self.cross_rate = cross_rate
+        self.cross_prob = cross_prob
 
     def _do(self, problem, X, **kwargs):
 
@@ -25,7 +25,7 @@ class AbstractCrossover(Crossover, abc.ABC):
         for k in range(n_matings):
             r = np.random.random()
             a, b = X[0, k], X[1, k]
-            if r < self.cross_rate:
+            if r < self.cross_prob:
                 off_a, off_b = self._do_crossover(problem, a, b)
             # get the first and the second parent
                 Y[0, k], Y[1, k] = off_a, off_b

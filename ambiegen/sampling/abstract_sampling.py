@@ -15,10 +15,8 @@ class AbstractSampling(Sampling, ABC):
         X = np.full((n_samples), None, dtype=object)
         i = 0
         while i < n_samples:
-            test, valid = self.generator.generate_random_test()
-            if valid:
-                test = self.generator.genotype
-                X[i] = np.array(test)
-                i += 1
+            test = self.generator.generate_random_test()
+            X[i] = np.array(test)
+            i += 1
 
         return X

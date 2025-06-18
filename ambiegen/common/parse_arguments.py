@@ -28,27 +28,14 @@ def parse_arguments_test_generation():
         help="Name of the test generator class",
         required=True,
     )
+
     parser.add_argument(
-        "--crossover",
+        "--config-path",
         type=str,
-        help="Type of crossover to use (e.g., sbx, one_point). Check ambiegen\__init__.py for more options",
-        required=False,
-        default="sbx",
+        help="Path to the configuration file",
+        required=True,
     )
-    parser.add_argument(
-        "--mutation",
-        type=str,
-        help="Type of mutation to use (e.g., polynomial, uniform). Check ambiegen\__init__.py for more options",
-        required=False,
-        default="pm",
-    )
-    parser.add_argument(
-        "--algorithm",
-        type=str,
-        help="Type of algorithm to use (e.g., ga, random). Check ambiegen\__init__.py for more options",
-        required=False,
-        default="ga",
-    )
+    
     parser.add_argument(
         "--runs",
         type=int,

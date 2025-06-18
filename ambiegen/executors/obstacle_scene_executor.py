@@ -1,13 +1,14 @@
 from ambiegen.executors.abstract_executor import AbstractExecutor
 from ambiegen.validators.abstract_validator import AbstractValidator
+from ambiegen.generators.abstract_generator import AbstractGenerator
 import logging
 log = logging.getLogger(__name__)
 class ObstacleSceneExecutor(AbstractExecutor):
     """
     Class for executing the test scenarios in the BeamNG simulator
     """
-    def __init__(self, generator, test_validator: AbstractValidator= None):
-        super().__init__(generator, test_validator)
+    def __init__(self, generator: AbstractGenerator, min_fitness: float = 0.0):
+        super().__init__(generator, min_fitness)
         self.uav_test_dict = {}
         self.n_sim_evals = 0
         self.num_failures = 0
