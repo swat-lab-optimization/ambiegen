@@ -2,7 +2,7 @@ site_name: AmbieGen
 site_description: Automated Testing Framework for Autonomous Robotic Systems
 
 theme:
-  name: material
+  name: readthedocs
   palette:
     primary: indigo
   logo: assets/logo.png
