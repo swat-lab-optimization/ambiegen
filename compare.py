@@ -17,7 +17,7 @@ from typing import List, Tuple, Dict, Any
 import logging as log
 from scipy.stats import mannwhitneyu
 from ambiegen.generators.abstract_generator import AbstractGenerator
-from ambiegen.generators.kappa_generator import KappaRoadGenerator
+
 from ambiegen.generators.obstacle_generator import ObstacleGenerator
 from matplotlib.ticker import MaxNLocator
 from aerialist.px4.obstacle import Obstacle

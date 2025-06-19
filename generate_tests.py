@@ -97,8 +97,6 @@ def generate_tests(
         )
         #save_tcs_images(dt_string, tester.generator, tcs[f"run{run}"],config, run, root_path=root_path)
 
-        
-
 if __name__ == "__main__":
     args = parse_arguments_test_generation()
     module_name = args.module_name

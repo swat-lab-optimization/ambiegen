@@ -5,7 +5,6 @@ common:
   termination: "n_gen"
   budget: 100
 
-
 search_based:
   pop_size: 100
   algorithm: "ga"
@@ -16,16 +15,14 @@ search_based:
   problem_name: 'uav'
 
 fuzzing:
-  mutators: ["bitflip", "shrink"]
+  algorithm: "ga"
+  problem_name: 'uav'
   max_depth: 5
-
-bayesian_optimization:
-  acquisition: "ei"
-  surrogate_model: "gp"
+  min_depth: 1
 
 
 experiment:
   name: "example_experiment-sbx-pm"
   description: "This is an example experiment configuration."
-  output_dir: "./results"
+  output_dir: "experiments"
   log_level: "info"
