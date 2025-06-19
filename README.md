@@ -63,6 +63,9 @@ keywords = {Evolutionary search, Autonomous systems, Self driving cars, Autonomo
 
 # Getting Started
 
+📚 Documentation
+Full documentation is available at: https://ambiegen.readthedocs.io/en/latest/
+
 ## Installation
 
 Clone the repository and install dependencies:
