@@ -18,8 +18,6 @@ def get_convergence(res):
     generations = np.arange(0, len(res.history), 1)
     convergence = []
     algorithm = res.algorithm
-    #pop_size = algorithm.pop_size
-    #n_offsprings = algorithm.n_offsprings
 
     if isinstance(algorithm, RandomSearch):
         n_offsprings = algorithm.n_points_per_iteration

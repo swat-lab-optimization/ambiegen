@@ -79,10 +79,6 @@ class AbstractTester(abc.ABC):
         """
         pass
 
-    #@abc.abstractmethod
-    #def process_experiment_results(self):
-    #    pass
-
     def start(self):
         """
         Function to start the test generation and optimization process.
@@ -95,4 +91,4 @@ class AbstractTester(abc.ABC):
         self.initialize_test_executors()
         self.set_up_search_algorithm()
         self.run_optimization()
-        return self.res, self.executor
+        return self.executors[0].test_dict, self.res

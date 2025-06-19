@@ -127,6 +127,7 @@ class AbstractEvolutionaryTester(AbstractTester):
             eliminate_duplicates=True,
             save_history=True,
         )
+        return self.res
 
     @abc.abstractmethod
     def initialize_test_generator(self):

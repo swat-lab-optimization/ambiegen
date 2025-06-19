@@ -279,8 +279,18 @@ class ObstacleGenerator(AbstractGenerator):
         r = random.choice(np.arange(self.min_position.r, self.max_position.r))
         return [l, w, h, x, y, r]
 
-    def visualize_test(self, test,  save_path:str = "test.png", num=0, title=""):
-        obstacles = test.test.simulation.obstacles
+    def visualize_test(self, test,  save_path:str = "test", num=0, title="", drone_path=None):
+            #test.plot()
+        obstacle_num = round(test[0])
+        obstacles = np.array(test[1:6*obstacle_num+1])
+        obstacles = obstacles.reshape(-1, 6)
+
+        start_point = [0, 0]
+        end_point = [0, 50]
+    
+    # Convert the numpy array back to a list of lists
+        obstacles = obstacles.tolist()
+        #obstacles = test.test.simulation.obstacles
         fig, ax = plt.subplots(figsize=(8,5.7))
 
         ax.set_xlim(self.min_position[0], self.max_position[0]+10) #80
@@ -295,25 +305,43 @@ class ObstacleGenerator(AbstractGenerator):
         rect = patches.Rectangle((area_x  -area_width/2, area_y - area_height/2), area_width, area_height, linewidth=1, edgecolor='black', facecolor='none', label='Obstacle area')
         ax.add_patch(rect)
 
-        start_point = [0, 0]
-        end_point = [0, 50]
-
         ax.scatter(start_point[0], start_point[1], c='green', label='Start point')
         ax.scatter(end_point[0], end_point[1], c='blue', label='End point')
 
+
         if obstacles is not None:
             for obst in obstacles:
-                obst_patch = obst.plt_patch()
-                ax.add_patch(obst_patch)
-            obst_patch.set_label("obstacle")
+                length, width, height, x, y, r = obst
+                rect = patches.Rectangle(
+                    (x - length / 2, y - width/ 2),  # bottom-left corner
+                    length,
+                    width,
+                    angle=r,
+                    edgecolor='blue',
+                    facecolor='none',
+                    rotation_point="center"
+                )
+
+                # Add the rectangle patch to the Axes
+                ax.add_patch(rect)
 
         ax.tick_params(axis='both', which='major', labelsize=16)
         ax.legend(fontsize=16)
         plt.ioff()
         ax.set_title(title, fontsize=16)
 
+        ax.set_xlabel('X')
+        ax.set_ylabel('Y')
+        ax.grid(True)
+
+        if drone_path is not None:
+            ax.scatter(drone_path[0], drone_path[1], c='red', label='Drone path')
+
+        #ax.legend()
+
         if not(os.path.exists(save_path)):
             os.makedirs(save_path, exist_ok=True)
+        #print("Save path", save_path)
         final_path = os.path.join(save_path, str(num) + ".png")
         fig.savefig(final_path, bbox_inches='tight')
         log.info("Saved image to " + final_path)

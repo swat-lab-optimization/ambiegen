@@ -10,7 +10,7 @@ from datetime import datetime
 from ambiegen.generators.abstract_generator import AbstractGenerator
 log = logging.getLogger(__name__)
 
-def save_tcs_images(generator: AbstractGenerator, test_suite, path, algo, problem, run, name, kappas=True):
+def save_tcs_images(dt_string, generator: AbstractGenerator, test_suite, config, run, phenotype=False, root_path="experiments"):
     """
     It takes a test suite, a problem, and a run number, and then it saves the images of the test suite
     in the images folder
@@ -23,13 +23,16 @@ def save_tcs_images(generator: AbstractGenerator, test_suite, path, algo, proble
         algo: the algorithm used to generate the test suite. Can be "random", "ga", "nsga2",
     """
 
-    now = datetime.now()
-    dt_string = now.strftime("%d-%m-%Y")
+    problem = config["search_based"]["problem_name"]
+    algorithm = config["search_based"]["algorithm"]
+    name = config["experiment"]["name"]
 
-    images_path = dt_string + "_" + path + "_" + algo + "_" + problem + "_" + name
+    images_path = dt_string + "_" + "images" + "_" + algorithm + "_" + problem + "_" + name
+
+    images_path = os.path.join(root_path, images_path)
 
     if not os.path.exists(images_path):
-        os.makedirs(images_path)
+        os.makedirs(images_path,  exist_ok=True)
     if not os.path.exists(os.path.join(images_path, "run" + str(run))):
         os.makedirs(os.path.join(images_path, "run" + str(run)))
 
@@ -38,9 +41,10 @@ def save_tcs_images(generator: AbstractGenerator, test_suite, path, algo, proble
         path = os.path.join(images_path, "run" + str(run))
 
         test = test_suite[str(i)]
-        if kappas:
+        if phenotype:
             test = generator.genotype2phenotype(test)
-    
+            
+        test = generator.denormalize_flattened_test(test)
         generator.visualize_test(test, path, i)
 
     log.info("Images saved in %s", images_path)

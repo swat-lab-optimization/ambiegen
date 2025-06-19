@@ -15,8 +15,6 @@ from pymoo.operators.sampling.rnd import FloatRandomSampling
 from pymoo.operators.sampling.lhs import LHS
 from ambiegen.sampling.greedy_sampling import GreedySampling
 
-from ambiegen.problems.lkas_problem import LKASProblem
-
 from ambiegen.executors.beam_executor import BeamExecutor
 from ambiegen.executors.simple_vehicle_executor import SimpleVehicleExecutor
 from ambiegen.executors.curve_executor import CurveExecutor
@@ -49,10 +47,6 @@ MUTATIONS = {
     "uniform": UniformMutation,
 }
 
-
-PROBLEMS = {
-    "lkas": LKASProblem,
-}
 
 EXECUTORS = {
     "beam": BeamExecutor,

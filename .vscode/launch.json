@@ -18,7 +18,7 @@
             "request": "launch",
             "module": "generate_tests",
             "console": "integratedTerminal",
-            "args": ["--module-name", "ambiegen.testers.uav_tester", "--class-name", "UAVTester", "--runs", "1", "--config-path", "tester_config.yaml"]
+            "args": ["--module-name", "ambiegen.testers.uav_tester", "--class-name", "UAVTester", "--runs", "3", "--config-path", "tester_config.yaml"]
         }
     ]
 }

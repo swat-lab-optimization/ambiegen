@@ -369,121 +369,83 @@ def plot_boxplot(
     plt.close()
     # log.info(f"Saving box plot: {os.path.join(save_dir, plot_name + "_" + name + ".png")}")
 
-def analyse_ads_tests(stats_path: List[str], stats_names: List[str], plot_name: str) -> None:
+def analyse(stats_path, stats_names, plot_name):
     """
-    The `analyse_tools` function takes in a list of file paths, a list of statistics names, and a plot
-    name, and performs analyse on the data in those files.
+    Main function for building plots comparing the algorithms
+    It takes a list of paths to folders containing the results of the tool runs, and a list of names
+    of the runs, and it plots the convergence and the boxplots of the fitness and novelty
 
-    Args:
-      stats_path: A list of paths to the directories where the statistics files are located.
-      stats_names: stats_names is a list of names for each set of statistics. It is used to label the
-    different sets of statistics in the plots and tables.
-      plot_name: The name of the plot that will be generated.
+    :param stats_path: a list of paths to the folders containing the stats files
+    :param stats_names: list of strings, names of the runs
     """
-    sparseness_list, oob_list, all_test_paths = collect_stats(stats_path, stats_names)
-    max_sparseness, max_oob = get_max_values(sparseness_list, oob_list)
-
-    plot_boxplot(sparseness_list, stats_names, "Sparseness", max_sparseness + 1, plot_name)
-    plot_boxplot(oob_list, stats_names, "Number of failures", max_oob + 5, plot_name)
-
-    build_median_table(oob_list, sparseness_list, stats_names, plot_name)
-    build_cliff_data(oob_list, sparseness_list, stats_names, plot_name)
-
-def analyse_uav_tests(tests_path: List[str], stats_names: List[str], plot_name: str, problem: str = "uav") -> None:
-    """
-    The `analyse_all_test` function takes in a list of test paths, a list of statistics names, and a plot
-    name, and performs analysis on the data in those files.
-
-    Args:
-      tests_path: A list of paths to the directories where the test files are located.
-      stats_names: stats_names is a list of names for each set of statistics. It is used to label the
-    different sets of statistics in the plots and tables.
-      plot_name: The name of the plot that will be generated.
-    """
-    generator = initialize_generator(problem)
-    stats_paths = collect_test_paths(tests_path)
-
-    fail_num_list_all, diversity_in_list_all = analyze_tests(stats_paths, generator)
-
-    plot_boxplot(fail_num_list_all, stats_names, "Number of failures", plot_name=plot_name)
-    plot_boxplot(diversity_in_list_all, stats_names, "Sparseness", plot_name=plot_name)
-
-    build_median_table(fail_num_list_all, diversity_in_list_all, stats_names, plot_name)
-    build_cliff_data(fail_num_list_all, diversity_in_list_all, stats_names, plot_name)
-
-def initialize_generator(problem: str) -> AbstractGenerator:
-    if problem == "ads":
-        ads_test_generator = LKASTestGenerator()
-        return KappaRoadGenerator(ads_test_generator.map_size, solution_size=ads_test_generator.nDim)
-    elif problem == "uav":
-        min_size = Obstacle.Size(2, 2, 15)
-        max_size = Obstacle.Size(20, 20, 25)
-        min_position = Obstacle.Position(-40, 10, 0, 0)
-        max_position = Obstacle.Position(30, 40, 0, 90)
-        case_study = "case_studies/mission1.yaml"
-        return ObstacleGenerator(min_size, max_size, min_position, max_position, case_study_file=case_study, max_box_num=3)
-
-def collect_stats(stats_path: List[str], stats_names: List[str]) -> Tuple[List[List[float]], List[List[int]], List[str]]:
-    sparseness_list = []
-    oob_list = []
-    all_test_paths = []
-
-    for path in stats_path:
-        current_sparseness_list, current_oob_list = [], []
-        for root, _, files in os.walk(path):
-            for filename in files:
-                if "oob_stats.csv" in filename:
-                    data = pd.read_csv(os.path.join(root, filename))
-                    current_sparseness_list.append(list(data["avg_sparseness"])[0])
-                    current_oob_list.append(list(data["total_oob"])[0])
-                if "all_tests" in filename:
-                    all_test_paths.append(os.path.join(root, filename))
-        sparseness_list.append(current_sparseness_list)
-        oob_list.append(current_oob_list)
-
-    return sparseness_list, oob_list, all_test_paths
-
-def get_max_values(sparseness_list: List[List[float]], oob_list: List[List[int]]) -> Tuple[float, int]:
-    max_sparseness = max(max(lst) for lst in sparseness_list if lst)
-    max_oob = max(max(lst) for lst in oob_list if lst)
-    return max_sparseness, max_oob
-
-def collect_test_paths(tests_path: List[str]) -> List[str]:
+    convergence_paths = []
     stats_paths = []
-    for path in tests_path:
+    conv_flag = False
+    for path in stats_path:
         for file in os.listdir(path):
-            if "all_tests_norm" in file:
+            if "conv" in file:
+                convergence_paths.append(os.path.join(path, file))
+                conv_flag = True
+            if "stats" in file:
                 stats_paths.append(os.path.join(path, file))
-    return stats_paths
 
-def analyze_tests(stats_paths: List[str], generator: AbstractGenerator) -> Tuple[List[List[int]], List[List[float]]]:
-    fail_num_list_all, diversity_in_list_all = [], []
+    if conv_flag:
+        dfs = {}
+        for i, file in enumerate(convergence_paths):
+            with open(file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            dfs[i] = pd.DataFrame(data=data)
+            dfs[i]["mean"] = dfs[i].mean(axis=1)
+            dfs[i]["std"] = dfs[i].std(axis=1)
 
-    for file in stats_paths:
+        plot_convergence(dfs, stats_names, plot_name+"_fitness")
+
+    fitness_list = []
+    best_fitness_list = []
+    novelty_list = []
+    time_list = []
+    max_fitness = 0
+    for i, file in enumerate(stats_paths):
         with open(file, "r", encoding="utf-8") as f:
-            all_tests = json.load(f)
+            data = json.load(f)
+        results_fitness = []
+        results_novelty = []
+        results_time = []
+        results_best_fitness = []
 
-        fail_num_list, diversity_in_list = [], []
+        for m in range(len(data)):
+            fitness_data = [abs(d) for d in data["run" + str(m)]["fitness"]]
+            value = max(fitness_data)
+            if value > max_fitness:
+                max_fitness = value
+            best_fitness = value
+            results_fitness.extend(fitness_data)  # data["run"+str(m)]["fitness"]
+            results_novelty.append(data["run" + str(m)]["novelty"])
+            results_best_fitness.append(best_fitness)
 
-        for run in all_tests:
-            failed_test_list = []
-            fail_num, tot_tests, valid_tests = 0, 0, 0
-            for tc in all_tests[run]:
-                if "outcome" in all_tests[run][tc] or any(tool in file for tool in ["tumb", "ambiegen"]): # adapt to the specific tool names
-                    valid_tests += 1
-                    if all_tests[run][tc]["outcome"] == "FAIL" or any(tool in file for tool in ["tumb", "ambiegen"]):
-                        fail_num += 1
-                        failed_test_list.append(all_tests[run][tc]["test"])
-                tot_tests += 1
+            if "times" in str(data):
+                results_time.extend(data["run" + str(m)]["times"])
 
-            fail_num_list.append(fail_num)
-            diversity_in = calculate_test_list_novelty(failed_test_list, generator)
-            diversity_in_list.append(sum(diversity_in) / len(diversity_in) if diversity_in else 0)
+        fitness_list.append(results_fitness)
+        novelty_list.append(results_novelty)
+        time_list.append(results_time)
+        best_fitness_list.append(results_best_fitness)
 
-        fail_num_list_all.append(fail_num_list)
-        diversity_in_list_all.append(diversity_in_list)
+    if results_time:
+        max_time = max(max(time_list[0]), max(time_list[1]))
+        plot_boxplot(time_list, stats_names, "Time, s", max_time + 0.2, plot_name)
+        build_times_table(time_list, stats_names)
 
-    return fail_num_list_all, diversity_in_list_all
+    plot_boxplot(
+        fitness_list, stats_names, "Fitness", max_fitness + 3, plot_name
+    )  # + 2
+    plot_boxplot(novelty_list, stats_names, "Diversity", 1.05, plot_name)
+
+    build_median_table(fitness_list, novelty_list, stats_names, plot_name)
+    build_cliff_data(fitness_list, novelty_list, stats_names, plot_name)
+
+    compare_mean_best_values_found(best_fitness_list, stats_names, plot_name)
+    compare_p_val_best_values_found(best_fitness_list, stats_names, plot_name)
 
 
 if __name__ == "__main__":

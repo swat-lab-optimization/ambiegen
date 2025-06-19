@@ -9,7 +9,7 @@ from pymoo.algorithms.soo.nonconvex.random_search import RandomSearch
 log = logging.getLogger(__name__)
 
 
-def get_test_suite(res, kappas=True):
+def get_test_suite(res, genotype=True):
     """
     It takes the last generation of the population and returns a dictionary of 30 test cases
 
@@ -22,10 +22,7 @@ def get_test_suite(res, kappas=True):
     test_suite = {}
     gen = len(res.history) - 1
     algorithm = res.algorithm
-    #pop_size = algorithm.pop_size
-    generator = algorithm.problem.executor.generator
-    #archive = algorithm.problem.executor.archive
-    #archive_size = algorithm.problem.executor.max_archive_size
+    generator = algorithm.problem.executors[0].generator
 
     if isinstance(algorithm, RandomSearch):
         n_offsprings = algorithm.n_points_per_iteration
@@ -37,11 +34,9 @@ def get_test_suite(res, kappas=True):
     #if algo != "nsga2" and algo != "rigaa":
     #    population = sorted(population, key=lambda x: abs(x[0].fitness), reverse=True)
     for i in range(pop_size):
-    #for i in range((archive_size)):
-        #result = res.history[gen].pop.get("X")[i][0]
-        #result = archive[i]#population[i]
+
         result = population[i]
-        if not(kappas):
+        if not(genotype):
             result = generator.genotype2phenotype(result)
             test_suite[str(i)] = result
         else:

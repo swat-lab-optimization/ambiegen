@@ -38,7 +38,12 @@ class AbstractSampling(Sampling, ABC):
         i = 0
         while i < n_samples:
             test = self.generator.generate_random_test()
-            X[i] = np.array(test)
-            i += 1
+            phenotype = self.generator.genotype2phenotype(test)
+            valid, _ = self.generator.is_valid(phenotype)
+
+            if valid:
+
+                X[i] = np.array(test)
+                i += 1
 
         return X

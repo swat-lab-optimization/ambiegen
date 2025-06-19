@@ -7,16 +7,13 @@ Description: script for saving test scenario metadata such as the test suite sta
 import os
 import json
 import logging #as log
-
-from datetime import datetime
 from beamng_sim.code_pipeline.tests_evaluation import OOBAnalyzer
 from beamng_sim.code_pipeline.tests_generation import TestGenerationStatistic
 
 log = logging.getLogger(__name__)
-from datetime import datetime
 
 
-def save_tc_results(dt_string, tc_stats, tcs, tcs_convergence, all_tests, path, algo, problem, name, root_path=".\\"):
+def save_tc_results(dt_string,  tc_stats, tcs, tcs_convergence, all_tests, config, root_path=".\\"):
     """
     It takes two arguments, tc_stats and tcs, and saves them as JSON files in the directories specified
     in the config file
@@ -28,13 +25,15 @@ def save_tc_results(dt_string, tc_stats, tcs, tcs_convergence, all_tests, path, 
 
     #now = datetime.now()
     #dt_string = now.strftime("%d-%m-%Y")
+    problem = config["search_based"]["problem_name"]
+    algorithm = config["search_based"]["algorithm"]
+    name = config["experiment"]["name"]
 
-    stats_path = dt_string + "_" + path + "_" + algo + "_" + problem + "_" + name
-    tcs_path = dt_string + "_" + path + "_" + algo + "_" + problem + "_" + name
+    stats_path = dt_string + "_stats_"  + problem + "_" + algorithm + "_" + name
+    tcs_path = dt_string + "_tcs_"  + problem + "_" + algorithm + "_" + name 
 
     stats_path = os.path.join(root_path, stats_path)
     tcs_path = os.path.join(root_path, tcs_path)
-
 
     if not os.path.exists(stats_path):
         os.makedirs(stats_path, exist_ok=True)
@@ -73,6 +72,10 @@ def save_tc_results(dt_string, tc_stats, tcs, tcs_convergence, all_tests, path, 
         log.info(
             "Stats saved as %s", os.path.join(stats_path, dt_string + "-all_tests.json")
         )
+
+
+    
+
 
 
         

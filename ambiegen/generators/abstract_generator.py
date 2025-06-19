@@ -103,7 +103,7 @@ class AbstractGenerator(abc.ABC):
             test2 (np.array): Second test to compare.
 
         Returns:
-            int: Comparison result, -1 if test1 < test2, 0 if equal, 1 if test1 > test2.
+            float: the degree of similarity between the two tests based on the distance function (cosine similarity by default)
         """
         pass
 

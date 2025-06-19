@@ -21,7 +21,7 @@ def get_stats(res):
       A dictionary with the fitness, novelty, and convergence of the results.
     """
     algorithm = res.algorithm
-    generator = algorithm.problem.executor.generator
+    generator = algorithm.problem.executors[0].generator
 
     if isinstance(algorithm, RandomSearch):
         n_offsprings = algorithm.n_points_per_iteration
@@ -34,14 +34,7 @@ def get_stats(res):
     gen = len(res.history) - 1
     population_fitness = res.history[gen].pop.get("F")*(-1)
     population_fitness = [float(i) for i in population_fitness]
-    #if algo != "nsga2" and algo != "rigaa":
-    #    population = sorted(population, key=lambda x: x[0], reverse=True)
-    #for i in range(pop_size):
 
-        # result = res.history[gen].pop.get("F")[i][0]
-    #    results.append(population[i][0])
-
-    #gen = len(res.history) - 1
     novelty_list = []
     population = res.history[gen].pop.get("X")
     #if algo != "nsga2" and algo != "rigaa":
