@@ -56,7 +56,6 @@ def generate_tests(
     log.info("Starting optimization")
     log.info(f"Number of runs: {runs}")
     log.info(f"Generator: {generator_class}")
-   # log.info(f"Tester: {config["tester"]}")
     log.info(f"Start time: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
     log.info("----------------------------------------------------")
 
