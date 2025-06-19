@@ -49,6 +49,9 @@ def generate_tests(
 ) -> None:
     """
     Run the optimization process.
+
+    Usage:
+        python generate_tests.py --module-name "ambiegen.testers.uav_tester" --class-name "UAVTester" --runs 3 --config-path "tester_config.yaml"
     """
     log.info("Starting optimization")
     log.info(f"Number of runs: {runs}")
@@ -93,7 +96,7 @@ def generate_tests(
             config,
             root_path=root_path,
         )
-        save_tcs_images(dt_string, tester.generator, tcs[f"run{run}"],config, run, root_path=root_path)
+        #save_tcs_images(dt_string, tester.generator, tcs[f"run{run}"],config, run, root_path=root_path)
 
         
 

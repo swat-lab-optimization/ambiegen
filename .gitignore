@@ -162,3 +162,5 @@ cython_debug/
 #.idea/
 log.txt
 *experiments*
+*stats_uav*
+*boxplots_uav*

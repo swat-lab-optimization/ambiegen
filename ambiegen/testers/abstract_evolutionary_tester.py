@@ -90,7 +90,7 @@ class AbstractEvolutionaryTester(AbstractTester):
             pop_size=self.pop_size,
             n_offsprings=int(round(self.pop_size / 2)),
             sampling=SAMPLERS[self.sampling](self.generator),
-            n_points_per_iteration=int(round(self.pop_size)),
+            n_points_per_iteration=int(round(self.pop_size / 2)),
             crossover=crossover,
             mutation=mutation,
             eliminate_duplicates=AbstractDuplicateElimination(

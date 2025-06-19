@@ -19,7 +19,6 @@ from scipy.stats import mannwhitneyu
 from ambiegen.generators.abstract_generator import AbstractGenerator
 from ambiegen.generators.kappa_generator import KappaRoadGenerator
 from ambiegen.generators.obstacle_generator import ObstacleGenerator
-from ambiegen.test_generators.lkas_test_generator import LKASTestGenerator
 from matplotlib.ticker import MaxNLocator
 from aerialist.px4.obstacle import Obstacle
 from ambiegen.common.cliffsDelta import cliffsDelta
@@ -110,11 +109,11 @@ def build_median_table(
     for name in column_names:
         columns.append(name)
 
-    row_0 = ["Failure number"]
+    row_0 = ["Fitness"]
     for alg in fitness_list:
         row_0.append(round(np.mean(alg), 3))
 
-    row_1 = ["Mean sparseness"]
+    row_1 = ["Mean diversity"]
     for alg in diversity_list:
         row_1.append(round(np.mean(alg), 3))
 
@@ -245,7 +244,7 @@ def build_cliff_data(
             writer.writerow(row)
 
 
-def plot_convergence(dfs, stats_names, plot_name):
+def plot_convergence(dfs, stats_names, plot_name, base_path="stats"):
     """
     Function for plotting the convergence of the algorithms
     It takes a list of dataframes and a list of names for the dataframes, and plots the mean and
@@ -257,8 +256,8 @@ def plot_convergence(dfs, stats_names, plot_name):
     """
     fig, ax = plt.subplots()
 
-    plt.xlabel("Number of simulations", fontsize=16)
-    plt.ylabel("Failures", fontsize=16)
+    plt.xlabel("Number of evaluations", fontsize=16)
+    plt.ylabel("Fitness", fontsize=16)
 
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
 
@@ -283,7 +282,7 @@ def plot_convergence(dfs, stats_names, plot_name):
         plt.legend()
 
     log.info("Saving plot to " + plot_name + "_convergence.png")
-    plt.savefig(plot_name + "_convergence.png", bbox_inches="tight")
+    plt.savefig(os.path.join(base_path, plot_name + "_convergence.png"), bbox_inches="tight")
     plt.close()
 
 
@@ -318,8 +317,6 @@ def calculate_test_list_novelty(
             local_novelty.append(nov)
         if local_novelty:
             all_novelty.append(sum(local_novelty) / len(local_novelty))
-            # all_novelty.append(max(local_novelty))
-            # all_novelty.append(min(local_novelty))
 
     return all_novelty
 
@@ -367,7 +364,6 @@ def plot_boxplot(
         os.path.join(save_dir, plot_name + "_" + name + ".png"), bbox_inches="tight"
     )
     plt.close()
-    # log.info(f"Saving box plot: {os.path.join(save_dir, plot_name + "_" + name + ".png")}")
 
 def analyse(stats_path, stats_names, plot_name):
     """
@@ -398,7 +394,7 @@ def analyse(stats_path, stats_names, plot_name):
             dfs[i]["mean"] = dfs[i].mean(axis=1)
             dfs[i]["std"] = dfs[i].std(axis=1)
 
-        plot_convergence(dfs, stats_names, plot_name+"_fitness")
+        plot_convergence(dfs, stats_names, plot_name+"_fitness", base_path=f"boxplots_{plot_name}")
 
     fitness_list = []
     best_fitness_list = []
@@ -434,7 +430,6 @@ def analyse(stats_path, stats_names, plot_name):
     if results_time:
         max_time = max(max(time_list[0]), max(time_list[1]))
         plot_boxplot(time_list, stats_names, "Time, s", max_time + 0.2, plot_name)
-        build_times_table(time_list, stats_names)
 
     plot_boxplot(
         fitness_list, stats_names, "Fitness", max_fitness + 3, plot_name
@@ -444,8 +439,6 @@ def analyse(stats_path, stats_names, plot_name):
     build_median_table(fitness_list, novelty_list, stats_names, plot_name)
     build_cliff_data(fitness_list, novelty_list, stats_names, plot_name)
 
-    compare_mean_best_values_found(best_fitness_list, stats_names, plot_name)
-    compare_p_val_best_values_found(best_fitness_list, stats_names, plot_name)
 
 
 if __name__ == "__main__":
@@ -455,11 +448,6 @@ if __name__ == "__main__":
     stats_path = arguments.stats_path
     stats_names = arguments.stats_names
     plot_name = arguments.plot_name
-    problem = arguments.problem
 
-    if problem == "uav":
-        analyse_uav_tests(stats_path, stats_names, plot_name)
-    elif problem == "ads":
-        analyse_ads_tests(stats_path, stats_names, plot_name)
-    else:
-        log.error("Invalid problem type. Please specify either 'ads' or 'uav'.")
+    analyse(stats_path, stats_names, plot_name)
+
