@@ -4,12 +4,31 @@ from ambiegen.executors.abstract_executor import AbstractExecutor
 from ambiegen.generators.abstract_generator import AbstractGenerator
 import time
 import numpy as np
-from typing import List, Optional
+from typing import List
 import logging #as log
 log = logging.getLogger(__name__)
+
 class AbstractProblem(ElementwiseProblem, ABC):
     """
-    This is the base class for performing solution evalaution
+    AbstractProblem is a base class for defining optimization problems that evaluate solutions using a set of executors and a generator.
+    
+    Arguments:
+        executor_list (List[AbstractExecutor]): A list of executor objects responsible for evaluating solutions.
+        generator (AbstractGenerator): An object responsible for generating solutions.
+        n_var (int, optional): Number of decision variables. Defaults to 10.
+        xl (optional): Lower bounds for the variables.
+        xu (optional): Upper bounds for the variables.
+        name (str, optional): Name of the problem. Defaults to "AbstractProblem".
+    
+    Attributes:
+        executors (List[AbstractExecutor]): List of executors used for evaluation.
+        generator (AbstractGenerator): Generator for creating solutions.
+        _name (str): Name of the problem.
+        min_fitness_list (List[float]): Minimum fitness values for each executor.
+    
+    Methods:
+        _evaluate(x, out, *args, **kwargs): Evaluates the given solution(s) using all executors and stores the results in the output dictionary.
+        name: Returns the name of the problem.
     """
 
     def __init__(self, executor_list: List[AbstractExecutor], generator: AbstractGenerator, n_var: int=10, xl=None, xu=None, name: str = "AbstractProblem"):
@@ -30,7 +49,7 @@ class AbstractProblem(ElementwiseProblem, ABC):
         test = x
         fit_list = []
         for i, executor in enumerate(self.executors):
-           #start = time.time()
+
             fitness = executor.execute_test(test)
             fit_list.append(fitness)
         fit_list = np.array(fit_list)

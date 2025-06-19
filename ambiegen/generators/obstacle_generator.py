@@ -20,7 +20,39 @@ import matplotlib.patches as patches
 log = logging.getLogger(__name__)
 
 class ObstacleGenerator(AbstractGenerator):
-    """Abstract class for all generators."""
+    '''
+    ObstacleGenerator is a generator class for creating and manipulating obstacle configurations for drone test cases.
+    This class provides methods to randomly generate, normalize, denormalize, and validate obstacle test cases within specified bounds. It supports conversion between phenotype (test case with obstacles) and genotype (flattened, normalized representation), as well as visualization of generated test cases.
+    
+    Attributes:
+        min_size (Obstacle.Size): Minimum allowed size for obstacles.
+        max_size (Obstacle.Size): Maximum allowed size for obstacles.
+        min_position (Obstacle.Position): Minimum allowed position for obstacles.
+        max_position (Obstacle.Position): Maximum allowed position for obstacles.
+        case_study (DroneTest): The drone test case loaded from a YAML file.
+        max_box_num (int): Maximum number of obstacles allowed in a test case.
+        _l_b (np.ndarray): Lower bounds for the flattened test case.
+        _u_b (np.ndarray): Upper bounds for the flattened test case.
+        _size (int): Size of the genotype vector.
+        size (int): Returns the size of the genotype vector.
+        lower_bound (list): Returns the lower bound for the genotype vector.
+        upper_bound (list): Returns the upper bound for the genotype vector.
+    
+    Methods:
+        cmp_func(x, y): Computes the cosine similarity difference between two vectors.
+        get_bounds(): Returns the lower and upper bounds for the genotype vector.
+        flatten_test_case(test): Flattens a nested test case structure into a 1D numpy array.
+        generate_random_test(): Generates a random, valid obstacle test case and returns its genotype.
+        normalize_flattened_test(test): Normalizes a flattened test case using min and max bounds.
+        denormalize_flattened_test(norm_test): Denormalizes a normalized test case back to original scale.
+        phenotype2genotype(phenotype): Converts a phenotype (TestCase) to a normalized genotype vector.
+        genotype2phenotype(genotype): Converts a genotype vector back to a phenotype (TestCase).
+        resize_test(test): Reshapes a flattened test case into the expected structure.
+        is_valid(test): Checks if a given test case is valid (no overlaps, within bounds).
+        obstacles_fit(box_list): Checks if a list of obstacles fit within the defined area and do not overlap.
+        get_random_box_vals(): Generates random values for a single obstacle's parameters.
+        visualize_test(test, save_path, num, title): Visualizes a test case and saves the plot to a file.
+    '''
     def __init__(self,  case_study_file: str, max_box_num:int=3):
         """Initialize the generator.
 

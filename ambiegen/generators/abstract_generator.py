@@ -4,12 +4,33 @@ import numpy as np
 
 
 class AbstractGenerator(abc.ABC):
-    """
-    Abstract base class for all test generators.
-
-    This class defines the interface that all test generators must implement,
-    providing a consistent API for generating, comparing, and visualizing tests.
-    """
+    '''
+    Abstract base class for genotype-phenotype generators.
+    This class defines the interface for generators that map between genotype and phenotype
+    representations, provide bounds for genotypes, generate random samples, validate tests,
+    and visualize them. Subclasses must implement all abstract properties and methods.
+    In other words, when adding a new generator, you should implement all the abstract methods defined in this class
+    
+    Attributes:
+        name (str): Name identifier for the generator.
+        size (int): Number of elements in the genotype representation.
+        lower_bound (List[float]): Lower bounds for each element in the genotype.
+        upper_bound (List[float]): Upper bounds for each element in the genotype.
+    
+    Methods:
+        cmp_func(test1: List[float], test2: List[float]) -> float:
+            Compare two tests and return -1, 0, or 1.
+        genotype2phenotype(genotype: List[float]) -> List[float]:
+            Convert a genotype to its phenotype representation.
+        generate_random_test() -> List[float]:
+            Generate a random valid test (genotype).
+        is_valid(test: List[float]) -> bool:
+            Check if a test is valid.
+        visualize_test(test: List[float], save_path: str = None):
+            Visualize a test.
+        phenotype2genotype(phenotype: List[float]) -> List[float]:
+            Convert a phenotype to its genotype representation.
+    '''
 
     def __init__(self, name: str = "AbstractGenerator"):
         """

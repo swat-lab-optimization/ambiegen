@@ -1,21 +1,27 @@
 from ambiegen.executors.abstract_executor import AbstractExecutor
-from ambiegen.validators.abstract_validator import AbstractValidator
+from ambiegen.generators.abstract_generator import AbstractGenerator
 import logging
 from ambiegen.common.rrt import RRT
 #from ambiegen.common.rrt_star import RRTStar
 log = logging.getLogger(__name__)
-import time
+
 class AmbieGenUAVExecutor(AbstractExecutor):
-    """
-    Class for evaluating a test case with an RRT planner
+    '''
+    AmbieGenUAVExecutor executes UAV test scenarios using the RRT (Rapidly-exploring Random Tree) algorithm to evaluate test fitness.
+    This executor integrates with a generator to define the environment and obstacles, runs the RRT path planning algorithm, and computes a fitness score based on the path length and simulation results. If the RRT fails to find a path or the fitness is below a threshold, it executes the test in simulation, evaluates the minimum distance to obstacles, and applies additional fitness bonuses or penalties. The outcome and metrics are logged for each execution.
     
     Attributes:
-        generator (Generator): The generator used to generate test scenarios.
-        test_validator (AbstractValidator): The validator used to validate test scenarios.
-        n_sim_evals (int): The number of simulation evaluations allowed.
-    """
-    def __init__(self, generator, test_validator: AbstractValidator= None):
-        super().__init__(generator, test_validator)
+        n_sim_evals (int): Counter for the number of simulation evaluations performed.
+        _name (str): Name identifier for the executor.
+        min_fitness (int): Minimum fitness threshold.
+        generator (AbstractGenerator): The generator object providing environment boundaries and obstacle information.
+   
+    Methods:
+        _execute(test) -> float:
+            Executes the test scenario using RRT, evaluates the path, and computes the fitness value.
+    '''
+    def __init__(self, generator: AbstractGenerator):
+        super().__init__(generator)
         self.n_sim_evals = 0
         self._name = "RRTExecutor"
         self.min_fitness = 25

@@ -11,7 +11,27 @@ import time
 log = logging.getLogger(__name__)
 class  AbstractExecutor(ABC):
     """
-    Class for evaluating the fitness of the test scenarios
+    AbstractExecutor is an abstract base class for evaluating the fitness of test scenarios.
+    
+    Attributes:
+        results_path (str): Path to store simulation results. If provided, the directory is created if it does not exist.
+        test_dict (dict): Dictionary storing information about each executed test, including test data, fitness, info, and timestamp.
+        generator (AbstractGenerator): Generator object responsible for converting genotypes to phenotypes and validating tests.
+        _name (str): Name identifier for the executor.
+        min_fitness (float): Minimum fitness threshold for test evaluation.
+        exec_counter (int): Counter tracking the number of executed tests.
+    
+    Methods:
+        __init__(generator, results_path=None, min_fitness=0.0):
+            Initializes the AbstractExecutor with the given generator, results path, and minimum fitness.
+        execute_test(test) -> Tuple[float, str]:
+            Executes a test scenario, evaluates its fitness, and returns the fitness score and additional information.
+            Handles test validity, execution timing, and error logging.
+        _execute(test) -> float:
+            Abstract method to be implemented by subclasses, defining how a test is executed and its fitness is computed.
+            This method should be implemented for a specific system under test.
+        name -> int:
+            Property returning the name identifier of the executor.
     """
     def __init__(
         self,
@@ -33,13 +53,20 @@ class  AbstractExecutor(ABC):
 
     def execute_test(self, test) -> Tuple[float, str]:
         """
-        The function `execute_test` executes a test and returns the fitness score and information about the
-        test execution.
+        Executes a given test, evaluates its fitness, and logs execution details.
         
-        :param test: The `test` parameter in the `execute_test` method is a test case that will be executed.
-        It is passed as an argument to the method
-        :return: The function `execute_test` returns a tuple containing two values: `fitness` and `info`.
+        Arguments:
+            test: The test input to be executed, typically a genotype representation.
+        
+        Returns:
+            Tuple[float, str]: A tuple containing the fitness value (as a float) and additional information (as a string).
+ 
+        Notes:
+            - Converts the genotype to phenotype using the generator.
+            - Validates the test before execution; if invalid, returns a fitness of 0.
+            - If an exception occurs during execution, logs the error and updates the test info accordingly.
         """
+
         self.exec_counter += 1  # counts how many executions have been
         
         fitness = 0
@@ -48,12 +75,9 @@ class  AbstractExecutor(ABC):
 
         test = self.generator.genotype2phenotype(test)
 
-        #log.info(f"Test: {test}")
         valid, info = self.generator.is_valid(test)
-        #log.info(f"Test validity: {valid}")
-        #log.info(f"Test info: {info}")
         if not valid:
-            #logger.debug("The generated road is invalid")
+            log.debug("The generated road is invalid")
             self.test_dict[self.exec_counter]["fitness"] = fitness
             self.test_dict[self.exec_counter]["info"] = info
             return float(fitness)
@@ -63,7 +87,7 @@ class  AbstractExecutor(ABC):
             fitness = self._execute(test)
             end = time.time()
             self.test_dict[self.exec_counter]["execution_time"] = end - start
-            #log.info(f"Execution time: {end - start} seconds")
+            log.debug(f"Execution time: {end - start} seconds")
             self.test_dict[self.exec_counter]["fitness"] = fitness
             self.test_dict[self.exec_counter]["info"] = info
 

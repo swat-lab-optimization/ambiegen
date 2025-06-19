@@ -7,7 +7,25 @@ import logging
 log = logging.getLogger(__name__)
 class ObstacleMutation(AbstractMutation):
     '''
-    This class performs mutation on the obstacles of the test
+    ObstacleMutation applies mutation operations to obstacle-based test configurations.
+    This class provides mutation strategies for modifying, adding, or removing obstacles in a test configuration.
+    It is designed to work with a generator that supplies obstacle parameters and normalization/denormalization
+    methods for the test representation.
+
+    Arguments:
+        mut_prob (float, optional): Probability of mutation being applied. Defaults to 0.4.
+        generator (AbstractGenerator, optional): Generator instance for obstacle parameter generation and test normalization.
+    
+    Methods:
+        do_mutation(x):
+            Applies a random mutation (modification, addition, or removal of an obstacle) to the input solution `x`.
+            Returns the mutated solution if valid, otherwise returns the original solution.
+        _random_modification(test):
+            Randomly modifies three parameters of a randomly selected obstacle in the test configuration.
+        _add_obstacle(test):
+            Adds a new randomly generated obstacle to the test configuration, if the maximum number is not exceeded.
+        _remove_obstacle(test):
+            Removes a randomly selected obstacle from the test configuration, if more than one obstacle exists.
     '''
     def __init__(self, mut_prob: float = 0.4, generator: AbstractGenerator = None):
         self.generator = generator # this allows to reuse mutation with differet frameworks

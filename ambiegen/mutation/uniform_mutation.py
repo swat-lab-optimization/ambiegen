@@ -9,10 +9,13 @@ class UniformMutation(AbstractMutation):
     This mutation operator randomly selects genes in the input array and replaces them with new values
     sampled uniformly within the allowed bounds for each gene. The probability of mutation for each gene
     is controlled by `un_mut_rate`.
-    Args:
-        mut_rate (float, optional): The overall mutation rate for the operator. Defaults to 0.4.
+
+    Arguments:
+        mut_prob (float, optional): The overall mutation rate for the operator. Defaults to 0.4.
+    
     Attributes:
         un_mut_rate (float): The probability of mutating each gene during uniform modification.
+    
     Methods:
         _do_mutation(x):
             Applies the mutation operator to the input array `x` by randomly selecting a mutation method.

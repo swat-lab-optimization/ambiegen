@@ -1,16 +1,24 @@
-from pymoo.core.sampling import Sampling
 import numpy as np
-from abc import ABC
 from ambiegen.generators.abstract_generator import AbstractGenerator
 from ambiegen.sampling.abstract_sampling import AbstractSampling
 from ambiegen.executors.abstract_executor import AbstractExecutor
 
 
 class GreedySampling(AbstractSampling):
+    """
+    GreedySampling implements a sampling strategy that selects the best candidate out of k randomly generated tests based on their fitness, using a greedy approach.
+    
+    Arguments:
+        generator (AbstractGenerator): An object capable of generating random tests and converting genotypes to phenotypes.
+        greedy_executor (AbstractExecutor): An object capable of evaluating the fitness of a phenotype.
+    
+    Methods:
+        _do(problem, n_samples, **kwargs): Generates `n_samples` test cases by repeatedly selecting the best out of k randomly generated candidates.
+        _select_best_of_k(k): Generates k random test cases and selects the one with the best (lowest) fitness value.
+    """
 
     def __init__(self, generator:AbstractGenerator, greedy_executor:AbstractExecutor) -> None:
         super().__init__(generator)
-        #self.generator = generator
         self.executor = greedy_executor
 
 

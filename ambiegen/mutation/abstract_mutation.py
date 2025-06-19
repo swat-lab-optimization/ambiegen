@@ -12,8 +12,10 @@ class AbstractMutation(Mutation, abc.ABC):
     This class defines the interface and basic behavior for mutation operations,
     including a mutation rate and the mechanism to apply mutation to a population.
     Subclasses must implement the `_do_mutation` method to specify the mutation logic.
+    
     Attributes:
         mut_rate (float): Probability of mutating an individual (default: 0.4).
+    
     Methods:
         _do(problem, X, **kwargs):
             Applies mutation to each individual in the population X with probability `mut_rate`.

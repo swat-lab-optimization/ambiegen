@@ -1,12 +1,28 @@
 from ambiegen.executors.abstract_executor import AbstractExecutor
-from ambiegen.validators.abstract_validator import AbstractValidator
 from ambiegen.generators.abstract_generator import AbstractGenerator
 import logging
 log = logging.getLogger(__name__)
 class ObstacleSceneExecutor(AbstractExecutor):
     """
-    Class for executing the test scenarios in the BeamNG simulator
+    Executes obstacle scene tests using a provided generator and evaluates their fitness.
+    This executor runs UAV (Unmanned Aerial Vehicle) simulation tests, tracks their outcomes, and computes a fitness score based on the minimum distance to obstacles encountered during the test. It maintains dictionaries to store test results and statistics, such as the number of simulation evaluations and failures.
+    
+    Arguments:
+        generator (AbstractGenerator): The generator used to create test scenarios.
+        min_fitness (float, optional): The minimum fitness threshold. Defaults to 0.0.
+    
+    Attributes:
+        uav_test_dict (dict): Stores detailed information about each UAV test execution.
+        n_sim_evals (int): Counter for the number of simulation evaluations performed.
+        num_failures (int): Counter for the number of failed tests.
+    
+    Methods:
+        _execute(test) -> float:
+            Executes a single test, records its results, and returns a fitness value.
+            The fitness is calculated as the negative inverse of the minimum distance to obstacles.
+            Handles exceptions during test execution and logs errors.
     """
+
     def __init__(self, generator: AbstractGenerator, min_fitness: float = 0.0):
         super().__init__(generator, min_fitness)
         self.uav_test_dict = {}
