@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["ambiegen*"]
+[project]
+name = "ambiegen"                # The name for pip install
+version = "0.0.2"
+description = "AmbieGen is a flexible and modular framework for automated scenario-based testing of autonomous robotic systems"
+readme = "README.md"
+requires-python = ">=3.10"
+license =  {file = "LICENSE"}
+authors = [
+  { name = "Dmytro Humeniuk", email = "gumenyuk98@gmail.com" }
+]
+dependencies = [
+    "pymoo==0.6.1.1",
+    "Shapely==1.8.4",
+    "pandas==2.2.3",
+    "numpy==1.23.2",
+    "tqdm==4.66.1",
+    "descartes==1.1.0",
+    "beamngpy==1.24",
+    "tensorboard==2.13.0",
+    "shimmy>=0.2.1b0",
+    "scipy==1.11.3",
+    "requests==2.28.1",
+    "pyparsing==3.2.0",
+    "click==8.1.7",
+    "cloudpickle==3.0.0",
+    "wandb==0.15.12",
+    "bagpy",
+    "black"
+]
+
+
+[project.urls]
+Homepage = "https://github.com/swat-lab-optimization/ambiegen"

@@ -42,6 +42,10 @@ def setup_logging(debug: bool = False, log_to: Optional[str] = "log.txt") -> Non
 
     logging.info(start_msg)
 
+
+def get_fitness_from_simulator():
+    return 1
+
 def generate_tests(
     runs: int = 1,
     generator_class: Type = None,
@@ -69,33 +73,43 @@ def generate_tests(
         log.info(f"Run {run}")
 
         tester = generator_class(config_file)
+        tester.initialize()
 
-        try:
-            generated_tests, res = tester.start()
-        except Exception as e:
-            log.error(f"Error while running generator: {e}")
-            log.info(f"Error {traceback.format_exc()} found")
-            log.error("Error during execution of test.", exc_info=True)
-            exit(1)
+        for num in range(15):
+
+            try:
+                x = tester.ask_next()
+                valid, fitness, test = tester.verify_next(x)
+                if valid:
+                    fitness = [get_fitness_from_simulator()]
+                tester.tell_next(x, fitness, "pass")
+            except Exception as e:
+                log.error(f"Error while running generator: {e}")
+                log.info(f"Error {traceback.format_exc()} found")
+                log.error("Error during execution of test.", exc_info=True)
+                exit(1)
 
         log.info(f"Run {run} finished")
         log.info("----------------------------------------------------")
 
-        tc_stats[f"run{run}"] = get_stats(res)
-        tcs_convergence[f"run{run}"] = get_convergence(res)
-        tcs[f"run{run}"] = get_test_suite(res)
+
+        generated_tests, res = tester.get_results()
+
+        # tc_stats[f"run{run}"] = get_stats(res)
+        # tcs_convergence[f"run{run}"] = get_convergence(res)
+        # tcs[f"run{run}"] = get_test_suite(res)
         all_tests[f"run{run}"] = generated_tests
 
-        save_tc_results(
-            dt_string,
-            tc_stats,
-            tcs,
-            tcs_convergence,
-            all_tests,
-            config,
-            root_path=root_path,
-        )
-        save_tcs_images(dt_string, tester.generator, tcs[f"run{run}"],config, run, root_path=root_path)
+        # save_tc_results(
+        #     dt_string,
+        #     tc_stats,
+        #     tcs,
+        #     tcs_convergence,
+        #     all_tests,
+        #     config,
+        #     root_path=root_path,
+        # )
+        #save_tcs_images(dt_string, tester.generator, tcs[f"run{run}"],config, run, root_path=root_path)
 
 if __name__ == "__main__":
     args = parse_arguments_test_generation()

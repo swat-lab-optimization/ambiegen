@@ -81,8 +81,8 @@ class AbstractTester(abc.ABC):
 
     def start(self):
         """
-        Function to start the test generation and optimization process.
-        
+        Function to start the test generation and optimization process. To be used when evaluation happens within the optimization process.
+
         Returns:
             tuple: A tuple containing the test results (`self.res`) and the test executor (`self.executor`).
         """
@@ -92,3 +92,19 @@ class AbstractTester(abc.ABC):
         self.set_up_search_algorithm()
         self.run_optimization()
         return self.executors[0].test_dict, self.res
+    
+
+    def initialize(self):
+        """
+        Initializes the tester by setting up the necessary components. To be used with ask and tell interface.
+        """
+        self.initialize_test_generator()
+        self.initialize_test_executors()
+        self.set_up_search_algorithm()
+
+
+    def get_results(self):
+        """
+        Retrieves the results of the test generation and optimization process. To be used with ask and tell interface.
+        """
+        return self.test_dict, self.method.result()

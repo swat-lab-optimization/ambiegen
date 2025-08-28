@@ -3,10 +3,10 @@ tester: search_based  # or 'fuzzing', 'bayesian_optimization', etc.
 common:
   seed: None
   termination: "n_gen"
-  budget: 100
+  budget: 10
 
 search_based:
-  pop_size: 100
+  pop_size: 10
   algorithm: "ga"
   crossover: "sbx"
   mutation: "pm"
@@ -22,7 +22,7 @@ fuzzing:
 
 
 experiment:
-  name: "example_experiment-sbx-pm"
+  name: "example_experiment-2"
   description: "This is an example experiment configuration."
   output_dir: "experiments"
   log_level: "info"
