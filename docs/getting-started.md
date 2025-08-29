@@ -1,15 +1,23 @@
 # Getting Started
 
-## Installation
+## Installation from source 
 
 Clone the repository and install dependencies:
 
-```python
+```bash
 git clone git@github.com:swat-lab-optimization/ambiegen.git
 cd ambiegen
 conda create -n ambiegen python=3.10
 conda activate ambiegen
 pip install -r requirements.txt
+```
+
+## Installation with pip
+
+To install AmbieGen using pip, run the following command:
+
+```bash
+pip install ambiegen
 ```
 
 ## Usage

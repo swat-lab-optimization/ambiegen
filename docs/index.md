@@ -42,6 +42,15 @@ Built on top of the [pymoo](https://pymoo.org/) multi-objective optimization lib
 
 ---
 
+## 🛠️ Installation
+
+To install AmbieGen, you can use pip:
+
+```bash
+pip install ambiegen
+```
+Project pypi page is available at [https://pypi.org/project/ambiegen/](https://pypi.org/project/ambiegen/)
+
 ## 📖 Citation
 If you use AmbieGen in your research, please cite the following paper:
 
