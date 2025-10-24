@@ -86,15 +86,25 @@ class AbstractEvolutionaryTester(AbstractTester):
         else:
             mutation = MUTATIONS[self.mutation](mut_prob=mut_prob)
 
+        if "duplicate_threshold" in self.config["search_based"]:
+            self.duplicate_threshold = self.config["search_based"]["duplicate_threshold"]
+        else:
+            self.duplicate_threshold = 0.025  # default value
+
+        if "n_offspring" in self.config["search_based"]:
+            self.n_offspring = self.config["search_based"]["n_offspring"]
+        else:
+            self.n_offspring = int(round(self.pop_size / 2))  # default value
+
         self.method = ALGORITHMS[self.alg](
             pop_size=self.pop_size,
-            n_offsprings=int(round(self.pop_size / 2)),
+            n_offsprings=self.n_offspring,
             sampling=SAMPLERS[self.sampling](self.generator),
-            n_points_per_iteration=int(round(self.pop_size / 2)),
+            n_points_per_iteration=self.n_offspring,
             crossover=crossover,
             mutation=mutation,
             eliminate_duplicates=AbstractDuplicateElimination(
-                generator=self.generator, threshold=0.025
+                generator=self.generator, threshold=self.duplicate_threshold
             ),
         )
 

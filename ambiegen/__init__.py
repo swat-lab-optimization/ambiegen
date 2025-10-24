@@ -8,6 +8,8 @@ from ambiegen.mutation.uniform_mutation import UniformMutation
 from pymoo.algorithms.soo.nonconvex.ga import GA
 from pymoo.algorithms.soo.nonconvex.de import DE
 from pymoo.algorithms.soo.nonconvex.es import ES
+from pymoo.algorithms.moo.nsga2 import NSGA2
+from pymoo.algorithms.soo.nonconvex.pso import PSO
 
 from ambiegen.sampling.abstract_sampling import AbstractSampling
 from pymoo.operators.sampling.rnd import FloatRandomSampling
@@ -20,7 +22,10 @@ ALGORITHMS = {
     "ga": GA, # Genetic Algorithm,
     "de": DE, # Differential Evolution
     "es": ES, # Evolution Strategy
-    "random": RandomSearch
+    "random": RandomSearch,
+    "nsga2": NSGA2, # Non-dominated Sorting Genetic Algorithm II
+    "pso": PSO # Particle Swarm Optimization
+
 }
 
 SAMPLERS = {

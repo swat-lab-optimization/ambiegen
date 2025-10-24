@@ -7,12 +7,14 @@ common:
 
 search_based:
   pop_size: 10
+  n_offspring: 10
   algorithm: "ga"
   crossover: "sbx"
   mutation: "pm"
   crossover_prob: 0.9
   mutation_prob: 0.4
   problem_name: 'uav'
+  duplicate_threshold: 0.01
 
 fuzzing:
   algorithm: "ga"
