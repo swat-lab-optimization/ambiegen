@@ -6,7 +6,7 @@ where = ["."]
 include = ["ambiegen*"]
 [project]
 name = "ambiegen"                # The name for pip install
-version = "0.0.3"
+version = "0.0.4"
 description = "AmbieGen is a flexible and modular framework for automated scenario-based testing of autonomous robotic systems"
 readme = "README.md"
 requires-python = ">=3.10"

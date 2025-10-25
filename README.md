@@ -3,6 +3,7 @@
 <p align="center">
   <img src="docs/assets/logo.png" alt="AmbieGen Logo" width="300"/>
 </p>
+
 **AmbieGen** is a flexible and modular framework for **automated scenario-based testing** of autonomous robotic systems. It leverages **evolutionary search algorithms** to generate and evolve test scenarios that expose weaknesses and critical failures in the system under test.
 
 Built on top of the [pymoo](https://pymoo.org/) multi-objective optimization library, AmbieGen provides a foundation for **customizable and extensible test generation workflows**, enabling researchers and developers to plug in their own test generators, search operators, and fitness functions with minimal effort.
