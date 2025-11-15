@@ -11,6 +11,7 @@ from ambiegen.testers.abstract_evolutionary_tester import AbstractEvolutionaryTe
 from typing import List
 import numpy as np
 import time
+
 log = logging.getLogger(__name__)
 
 
@@ -28,7 +29,7 @@ class AbstractEvolutionaryTesterAskTell(AbstractEvolutionaryTester):
     Methods:
         set_up_search_algorithm(): Initializes the search algorithm.
         initialize_parameters(): Sets up the parameters for the evolutionary algorithm.
-        configure_algorithm(): Sets up the evolutionary algorithm 
+        configure_algorithm(): Sets up the evolutionary algorithm
         initialize_problem(): Initializes the pymoo optimization problem.
         run_optimization(): Executes the optimization process using the configured algorithm.
         initialize_test_generator(): Abstract method to initialize the test generator, should be implemented specifically for the target problem.
@@ -41,11 +42,8 @@ class AbstractEvolutionaryTesterAskTell(AbstractEvolutionaryTester):
         self.exec_counter = 0
         self.test_dict = {}
 
-        
-
     def ask_next(self):
         if self.current_individual >= self.ind_num:
-
             if self.pop is not None:
                 self.method.tell(self.pop)
             self.current_individual = 0
@@ -58,11 +56,16 @@ class AbstractEvolutionaryTesterAskTell(AbstractEvolutionaryTester):
         self.current_individual += 1
 
         return ind
-    
+
     def verify_next(self, test):
         fitness = 0
 
-        self.test_dict[self.exec_counter] = {"test": list(test), "fitness": None, "info": None, "timestamp": time.time() }
+        self.test_dict[self.exec_counter] = {
+            "test": list(test),
+            "fitness": None,
+            "info": None,
+            "timestamp": time.time(),
+        }
 
         test_phenotype = self.generator.genotype2phenotype(test)
 
@@ -76,13 +79,12 @@ class AbstractEvolutionaryTesterAskTell(AbstractEvolutionaryTester):
             return False, float(fitness), test_phenotype
         return True, None, test_phenotype
 
-    def tell_next(self, ind:np.ndarray, fitness:List[float], outcome: str):
+    def tell_next(self, ind: np.ndarray, fitness: List[float], outcome: str):
         self.pop[self.current_individual - 1].set("F", np.array(fitness))
         self.test_dict[self.exec_counter]["fitness"] = fitness
         self.test_dict[self.exec_counter]["outcome"] = outcome
         self.exec_counter += 1
         print(f"Individual {self.current_individual} fitness: {fitness}")
-
 
     def ask(self) -> List:
         """
@@ -99,36 +101,36 @@ class AbstractEvolutionaryTesterAskTell(AbstractEvolutionaryTester):
         """Provides the test results back to the tester."""
         self.method.tell(population)
 
-
     def set_up_search_algorithm(self):
         """
         Sets up the search algorithm by initializing parameters, configuring the algorithm,
-        and initializing the problem. 
+        and initializing the problem.
         """
         self.initialize_parameters()
         self.configure_algorithm()
         self.initialize_problem()
-        termination  = get_termination(
-                self.config["common"]["termination"], self.config["common"]["budget"]
-            )
-        self.method.setup(self.problem, termination=termination, verbose=True, eliminate_duplicates=True, save_history=True)
+        termination = get_termination(
+            self.config["common"]["termination"], self.config["common"]["budget"]
+        )
+        self.method.setup(
+            self.problem,
+            termination=termination,
+            verbose=True,
+            eliminate_duplicates=True,
+            save_history=True,
+        )
         np.random.seed(self.seed)
         self.current_individual = self.pop_size
         self.ind_num = self.pop_size
         self.pop = None
 
-
     @abc.abstractmethod
     def initialize_test_generator(self):
-        '''
-        To be implemented specifically for your problem.'''
+        """
+        To be implemented specifically for your problem."""
         pass
-
-
 
     def initialize_test_executors(self):
         """
         To be implemented specifically for your problem."""
         pass
-
-

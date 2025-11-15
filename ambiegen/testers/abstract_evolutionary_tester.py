@@ -1,4 +1,5 @@
 import abc
+import importlib
 import logging
 from pymoo.optimize import minimize
 from pymoo.termination import get_termination
@@ -96,6 +97,14 @@ class AbstractEvolutionaryTester(AbstractTester):
         else:
             self.n_offspring = int(round(self.pop_size / 2))  # default value
 
+        if "repair" in self.config["search_based"]:
+            repair_cfg = self.config["search_based"]["repair"]
+            module = importlib.import_module(repair_cfg["module"])
+            repair_cls = getattr(module, repair_cfg["class"])
+            repair = repair_cls()
+        else:
+            repair = None
+
         self.method = ALGORITHMS[self.alg](
             pop_size=self.pop_size,
             n_offsprings=self.n_offspring,
@@ -103,6 +112,7 @@ class AbstractEvolutionaryTester(AbstractTester):
             n_points_per_iteration=self.n_offspring,
             crossover=crossover,
             mutation=mutation,
+            repair=repair,
             eliminate_duplicates=AbstractDuplicateElimination(
                 generator=self.generator, threshold=self.duplicate_threshold
             ),
